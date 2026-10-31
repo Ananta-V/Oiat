@@ -13,7 +13,6 @@ import {
   RefreshCw,
   Search,
   Trash2,
-  Mail,
   MessageSquare,
   ExternalLink,
   Check,
@@ -224,7 +223,6 @@ export default function AdminPage() {
 
   // Copy feedback state
   const [copiedSql, setCopiedSql] = useState(false);
-  const [copiedEmails, setCopiedEmails] = useState(false);
 
   // Initial Auth Check
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -456,36 +454,9 @@ export default function AdminPage() {
     }
   }
 
-  // Delete subscriber
-  async function handleDeleteSubscriber(id: string) {
-    if (!confirm("Remove this email subscriber?")) return;
-    try {
-      const res = await fetch("/api/admin/subscribers", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok) {
-        setSubscribers((prev) => prev.filter((s) => s.id !== id));
-      } else {
-        alert("Could not remove subscriber.");
-      }
-    } catch {
-      alert("Error removing subscriber.");
-    }
-  }
-
   function copySchema() {
-    navigator.clipboard.writeText(SQL_SCHEMA);
-    setCopiedSql(true);
-    setTimeout(() => setCopiedSql(false), 2500);
-  }
-
-  function copyAllEmails() {
-    const emailList = subscribers.map((s) => s.email).join(", ");
-    navigator.clipboard.writeText(emailList);
-    setCopiedEmails(true);
-    setTimeout(() => setCopiedEmails(false), 2500);
+    const schemaEl = document.querySelector('.admin-code-block');
+    if (schemaEl) navigator.clipboard?.writeText(schemaEl.textContent || '').catch(() => {});
   }
 
   function exportFeedbacksCsv() {
@@ -780,7 +751,6 @@ export default function AdminPage() {
             className={`admin-tab ${activeTab === "subscribers" ? "active" : ""}`}
             onClick={() => setActiveTab("subscribers")}
           >
-            <Mail size={15} />
             <span>Newsletter Subscribers</span>
             <span className="admin-tab-count">{subscribers.length}</span>
           </button>
@@ -1179,74 +1149,33 @@ export default function AdminPage() {
           <section>
             <div className="admin-toolbar">
               <div className="admin-toolbar-left">
-                <span style={{ fontSize: 14, color: "#ad9a89" }}>
-                  <strong>{subscribers.length}</strong> total registered subscribers
-                </span>
-              </div>
-
-              <div className="admin-toolbar-right">
-                <button
-                  type="button"
-                  className="admin-btn-gold"
-                  onClick={copyAllEmails}
-                  disabled={!subscribers.length}
-                >
-                  {copiedEmails ? <Check size={13} /> : <Copy size={13} />}
-                  <span>{copiedEmails ? "Emails Copied!" : "Copy All Emails"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="admin-btn-outline"
-                  onClick={loadSubscribers}
-                  title="Refresh list"
-                >
-                  <RefreshCw size={13} className={isLoadingData ? "spin" : ""} />
-                  <span>Refresh</span>
-                </button>
+                <h3 style={{ margin: 0, color: "#f6f0e6" }}>Newsletter Subscribers</h3>
               </div>
             </div>
-
             {subscribers.length === 0 ? (
-              <div className="admin-empty-state">
-                <Mail size={40} />
-                <h4>No subscribers yet</h4>
-                <p>When customers subscribe through the newsletter footer, their email will appear here.</p>
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#8a7a6a" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+                <p>No subscribers yet.</p>
               </div>
             ) : (
-              <div className="admin-table-card">
-                <table className="admin-table">
+              <div style={{ padding: "0 24px 24px" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr>
-                      <th>Email Address</th>
-                      <th>Acquired Via</th>
-                      <th>Subscribed On</th>
-                      <th style={{ textAlign: "right" }}>Actions</th>
+                    <tr style={{ background: "#2a1208", color: "#d4b896" }}>
+                      <th style={{ padding: "10px 14px", textAlign: "left" }}>#</th>
+                      <th style={{ padding: "10px 14px", textAlign: "left" }}>Email</th>
+                      <th style={{ padding: "10px 14px", textAlign: "left" }}>Source</th>
+                      <th style={{ padding: "10px 14px", textAlign: "left" }}>Date</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {subscribers.map((s) => (
-                      <tr key={s.id}>
-                        <td style={{ fontWeight: 500 }}>{s.email}</td>
-                        <td>
-                          <span className="admin-badge admin-badge-neutral">{s.source}</span>
-                        </td>
-                        <td style={{ color: "#ad9a89" }}>
-                          {new Date(s.created_at).toLocaleDateString("en-IN", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </td>
-                        <td style={{ textAlign: "right" }}>
-                          <button
-                            type="button"
-                            className="admin-btn-icon-danger"
-                            onClick={() => handleDeleteSubscriber(s.id)}
-                            title="Remove subscriber"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                    {subscribers.map((s, i) => (
+                      <tr key={s.id} style={{ borderBottom: "1px solid #3a2010" }}>
+                        <td style={{ padding: "10px 14px", color: "#8a7a6a" }}>{i + 1}</td>
+                        <td style={{ padding: "10px 14px", color: "#f6f0e6" }}>{s.email}</td>
+                        <td style={{ padding: "10px 14px", color: "#8a7a6a" }}>{s.source || "newsletter"}</td>
+                        <td style={{ padding: "10px 14px", color: "#8a7a6a" }}>
+                          {new Date(s.created_at).toLocaleDateString("en-IN")}
                         </td>
                       </tr>
                     ))}
@@ -1257,47 +1186,24 @@ export default function AdminPage() {
           </section>
         )}
 
-        {/* ================= TAB 5: GUIDE & CONFIG ================= */}
+        {/* ================= TAB 5: GUIDE ================= */}
         {activeTab === "guide" && (
-          <section>
-            <div className="admin-guide-card">
-              <h3>1. Supabase Database Setup</h3>
-              <p>
-                To enable permanent storage for chocolate products, UPI orders, customer reviews, and subscribers, execute the SQL schema below in your Supabase project (<strong>ktennsxpuvojtyhbmnxc</strong>).
-              </p>
-              <div className="admin-code-block">
-                <button type="button" onClick={copySchema} className="admin-copy-code-btn">
-                  {copiedSql ? "Copied!" : "Copy SQL"}
-                </button>
-                <pre>{SQL_SCHEMA}</pre>
-              </div>
-              <a
-                href="https://supabase.com/dashboard/project/ktennsxpuvojtyhbmnxc/sql"
-                target="_blank"
-                rel="noreferrer"
-                className="admin-btn-gold"
-              >
-                <span>Open Supabase SQL Editor</span> <ExternalLink size={14} />
-              </a>
-            </div>
-
-            <div className="admin-guide-card">
-              <h3>2. Vercel Environment Variables</h3>
-              <p>
-                When deploying to Vercel, configure the following variables in your <strong>Vercel Project Settings &rarr; Environment Variables</strong>:
-              </p>
-              <div className="admin-code-block">
-                <pre>{`NEXT_PUBLIC_SUPABASE_URL = your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY = your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY = your-supabase-service-role-key
-ADMIN_PASSWORD = your-chosen-admin-password`}</pre>
-              </div>
-              <p>
-                The <code>ADMIN_PASSWORD</code> is the password you enter to unlock this dashboard. You can set it to any secure password you prefer.
-              </p>
+          <section style={{ padding: "24px" }}>
+            <h3 style={{ color: "#f6f0e6", marginBottom: 16 }}>Supabase &amp; Vercel Config Guide</h3>
+            <div style={{ background: "#1e0f06", borderRadius: 8, padding: "16px 20px", color: "#d4b896", fontSize: 13, lineHeight: 1.7 }}>
+              <p><strong>Supabase Project:</strong> ktennsxpuvojtyhbmnxc</p>
+              <p><strong>Required ENV vars (set in Vercel dashboard):</strong></p>
+              <ul style={{ margin: "8px 0 0 16px" }}>
+                <li>NEXT_PUBLIC_SUPABASE_URL</li>
+                <li>NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
+                <li>SUPABASE_SERVICE_ROLE_KEY</li>
+                <li>ADMIN_PASSWORD</li>
+              </ul>
+              <p style={{ marginTop: 12 }}>Run the SQL from <strong>SUPABASE_SCHEMA.md</strong> in your Supabase SQL Editor to initialize tables.</p>
             </div>
           </section>
         )}
+
       </main>
 
       {/* ================= PRODUCT EDIT MODAL ================= */}

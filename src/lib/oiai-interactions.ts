@@ -56,17 +56,23 @@ export function initializeOiAI() {
     return PRODUCTS.filter(product => state.filter === 'All' || product.filter === state.filter);
   }
   function productCard(product, index) {
-    return `<button type="button" class="product-card hanging-product" data-product-name="${escapeHTML(product.name)}" data-product-id="${product.id}" data-feedback-context="Chocolate I tried" aria-label="Share feedback about ${escapeHTML(product.name)}" style="--hang-angle:${index % 2 ? '1.15deg' : '-1.05deg'};--hang-drop:${[0, 8, 3, 11, 2, 7, 1, 9, 4][index] || 0}px;animation-delay:${Math.min(index, 8) * 45}ms">
+    return `<button type="button" class="product-card hanging-product" data-product-name="${escapeHTML(product.name)}" data-product-id="${product.id}" aria-label="View details and order ${escapeHTML(product.name)}" style="--hang-angle:${index % 2 ? '1.15deg' : '-1.05deg'};--hang-drop:${[0, 8, 3, 11, 2, 7, 1, 9, 4][index] || 0}px;animation-delay:${Math.min(index, 8) * 45}ms">
     <span class="product-card-kicker"><span>${String(product.id).padStart(2, '0')} / 09</span><span>${product.badge}</span></span>
     <span class="product-photo-frame"><img src="${product.image}" alt="${escapeHTML(product.name)}" loading="eager" onerror="this.onerror=null;this.src='${fallbackPhoto}'" /></span>
     <span class="product-info">
       <span class="product-meta"><span>${product.kind}</span><span>SMALL BATCH</span></span>
-      <span class="product-title-row"><span class="product-title">${escapeHTML(product.name)}</span></span>
+      <span class="product-title-row">
+        <span class="product-title">${escapeHTML(product.name)}</span>
+        <span class="product-card-price">${money(product.price)}</span>
+      </span>
       <span class="product-personality">${escapeHTML(product.personality)}</span>
       <span class="product-tagline">“${escapeHTML(product.tagline)}”</span>
       <span class="product-desc">${escapeHTML(product.desc)}</span>
       <span class="product-ingredients"><b>INGREDIENTS</b> ${escapeHTML(product.ingredients)}</span>
-      <span class="product-card-bottom"><span class="product-weight">Made for little moments</span><span class="batch-mark">Leave a little love ↗</span></span>
+      <span class="product-card-bottom">
+        <span class="product-price-pill">${money(product.price)} · ${escapeHTML(product.weight || 'Box of 6')}</span>
+        <span class="batch-mark">Order / Details ↗</span>
+      </span>
     </span>
   </button>`;
   }
@@ -245,7 +251,8 @@ export function initializeOiAI() {
               <img class="qv-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?data=upi%3A%2F%2Fpay%3Fpa%3D${encodeURIComponent(upiId)}%26pn%3DOiAI%26am%3D${p.price}%26cu%3DINR&size=180x180" alt="UPI QR Code" id="qv-qr-img" />
             </div>
             <p class="qv-upi-id-row">UPI ID: <strong id="qv-upi-id-text">${upiId}</strong> <button class="qv-copy-btn" id="qv-copy-upi" type="button" title="Copy UPI ID">Copy</button></p>
-            <input class="qv-input" id="qv-utr" type="text" placeholder="Transaction / UTR ID" />
+            <p class="qv-utr-label">Enter the UTR / UPI Transaction ID.</p>
+            <input class="qv-input" id="qv-utr" type="text" placeholder="Enter the UTR / UPI Transaction ID." />
             <label class="qv-upload-label" for="qv-screenshot">
               <span>&#x1F4CE; Attach payment screenshot</span>
               <input type="file" id="qv-screenshot" accept="image/*" style="display:none" />
@@ -267,6 +274,8 @@ export function initializeOiAI() {
           <h2 class="qv-success-title">Order Received!</h2>
           <p class="qv-success-msg" id="qv-success-msg">Thank you! We will confirm your order shortly.</p>
           <p class="qv-order-id-line" id="qv-order-id-line"></p>
+          <p class="qv-receipt-note">A copy of all the details and payment verification will be sent to your email. Thank you!</p>
+          <button class="qv-download-receipt-btn" id="qv-download-receipt" type="button">&#x1F4E5; Download Receipt</button>
           <a class="qv-whatsapp-chat-btn" id="qv-wa-btn" href="#" target="_blank" rel="noopener noreferrer">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.549 4.116 1.513 5.849L0 24l6.363-1.487A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.947 0-3.775-.5-5.373-1.373L2 22l1.394-4.487A9.967 9.967 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"></path></svg>
             Send order details on WhatsApp
@@ -373,6 +382,24 @@ export function initializeOiAI() {
         const waBtn = $('#qv-wa-btn');
         if (waBtn) waBtn.href = 'https://wa.me/' + whatsappNum + '?text=' + waMsg;
 
+        // Wire receipt download
+        const dlBtn = $('#qv-download-receipt');
+        if (dlBtn) {
+          dlBtn.addEventListener('click', function() {
+            generateReceiptImage({
+              orderId: orderId,
+              productName: p.name,
+              quantity: qvQty,
+              totalPrice: p.price * qvQty,
+              custName: custName,
+              custPhone: custPhone,
+              custEmail: custEmail,
+              custAddress: custAddress,
+              utr: utr
+            });
+          });
+        }
+
       } catch (err) {
         showToast('Could not place order. Please try WhatsApp directly.', true);
         confirmBtn.disabled = false;
@@ -402,6 +429,128 @@ export function initializeOiAI() {
     state.activeProduct = null;
     qvActiveProduct = null;
     qvQty = 1;
+  }
+
+  function generateReceiptImage(details: {
+    orderId: string; productName: string; quantity: number; totalPrice: number;
+    custName: string; custPhone: string; custEmail: string; custAddress: string; utr: string;
+  }) {
+    const canvas = document.createElement('canvas');
+    const W = 600, H = 820;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Background — warm cream
+    ctx.fillStyle = '#fdf6ee';
+    ctx.fillRect(0, 0, W, H);
+
+    // Outer border
+    ctx.strokeStyle = '#8c4c2b';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(14, 14, W - 28, H - 28);
+
+    // Inner border
+    ctx.strokeStyle = '#d4a96a';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(22, 22, W - 44, H - 44);
+
+    // Header block
+    ctx.fillStyle = '#3b1a0a';
+    ctx.fillRect(0, 40, W, 90);
+
+    // Brand name
+    ctx.fillStyle = '#f5e6d0';
+    ctx.font = 'bold 28px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('OIAT | THE GOOD STUFF', W / 2, 82);
+
+    ctx.font = '13px Georgia, serif';
+    ctx.fillStyle = '#d4a96a';
+    ctx.fillText('Oops! I Ate It — Homemade Chocolates', W / 2, 108);
+
+    // ORDER RECEIPT title
+    ctx.fillStyle = '#8c4c2b';
+    ctx.font = 'bold 16px Georgia, serif';
+    ctx.fillText('✦ ORDER RECEIPT ✦', W / 2, 158);
+
+    // Decorative line
+    ctx.strokeStyle = '#d4a96a';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(50, 168); ctx.lineTo(W - 50, 168); ctx.stroke();
+
+    // Details
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    ctx.textAlign = 'left';
+    ctx.font = '13px Georgia, serif';
+    ctx.fillStyle = '#5a3118';
+
+    const rows: Array<[string, string]> = [
+      ['Order ID', details.orderId || 'Pending'],
+      ['Date & Time', dateStr + '  ' + timeStr],
+      ['', ''],
+      ['Item', details.productName],
+      ['Quantity', String(details.quantity)],
+      ['Total Amount', '\u20B9' + details.totalPrice.toFixed(2)],
+      ['', ''],
+      ['Customer Name', details.custName],
+      ['Phone', details.custPhone],
+      ['Email', details.custEmail || '—'],
+      ['Delivery Address', details.custAddress],
+      ['', ''],
+      ['Transaction / UTR ID', details.utr || 'Not provided'],
+      ['Payment Method', 'UPI — 8125107227@upi'],
+      ['Payment Status', 'Verification Pending'],
+    ];
+
+    let y = 195;
+    for (const [label, value] of rows) {
+      if (!label && !value) { y += 8; continue; }
+      ctx.fillStyle = '#a0693a';
+      ctx.font = 'bold 12px Georgia, serif';
+      ctx.fillText(label + (label ? ':' : ''), 55, y);
+      ctx.fillStyle = '#3b1a0a';
+      ctx.font = '12px Georgia, serif';
+      // Wrap long values
+      const maxW = 320;
+      const words = value.split(' ');
+      let line = ''; let lx = 270; let ly = y;
+      for (const word of words) {
+        const test = line + (line ? ' ' : '') + word;
+        if (ctx.measureText(test).width > maxW && line) {
+          ctx.fillText(line, lx, ly); ly += 16; line = word;
+        } else { line = test; }
+      }
+      if (line) ctx.fillText(line, lx, ly);
+      y = Math.max(y, ly) + 20;
+    }
+
+    // Divider
+    ctx.strokeStyle = '#d4a96a';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(50, y + 4); ctx.lineTo(W - 50, y + 4); ctx.stroke();
+    y += 22;
+
+    // Thank you note
+    ctx.textAlign = 'center';
+    ctx.font = 'italic 12px Georgia, serif';
+    ctx.fillStyle = '#8c4c2b';
+    ctx.fillText('A copy of all the details and payment verification', W / 2, y);
+    ctx.fillText('will be sent to your email. Thank you! 🍫', W / 2, y + 18);
+
+    // Footer
+    ctx.font = '11px Georgia, serif';
+    ctx.fillStyle = '#a0693a';
+    ctx.fillText('OIAT — Made with love, delivered with care.', W / 2, H - 38);
+
+    // Download
+    const link = document.createElement('a');
+    link.download = 'OIAT-Receipt-' + (details.orderId || 'order') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   }
   function setFilter(filter) {
     state.filter = filter;

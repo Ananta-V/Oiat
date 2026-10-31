@@ -4,13 +4,15 @@ import "./oiai.css";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: {
-    default: "OiAI — Oops! I Ate It. | Homemade Chocolates",
-    template: "%s | OiAI — Oops! I Ate It.",
-  },
+  title: "OIAT | THE GOOD STUFF",
   description:
     "OiAI, Oops! I Ate It. Homemade chocolates made slowly, wrapped by hand, and impossible to leave alone.",
-  applicationName: "OiAI — Oops! I Ate It.",
+  applicationName: "OIAT | THE GOOD STUFF",
+  icons: {
+    icon: "/images/oiai/inline-5ce9324fd6c7.png",
+    shortcut: "/images/oiai/inline-5ce9324fd6c7.png",
+    apple: "/images/oiai/inline-5ce9324fd6c7.png",
+  },
   robots: { index: true, follow: true },
 };
 
@@ -24,6 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="en">
       <head>
+        <link rel="icon" type="image/png" href="/images/oiai/inline-5ce9324fd6c7.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />

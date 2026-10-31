@@ -2,7 +2,7 @@
 
 Next.js 15 App Router implementation of the supplied OiAI catalogue design. The original page is split into reusable React section components, its original CSS is kept in `src/app/oiai.css`, its interactive behaviour is isolated in `src/lib/oiai-interactions.ts`, and its embedded photography is stored as local files under `public/images/oiai/`.
 
-## Design fidelity
+## Design fidelity ..
 
 The source CSS and original image bytes are preserved. The implementation does not intentionally change font sizes, image dimensions, spacing, proportions, breakpoints, or animation styling. The page markup is converted into React components while retaining the original class names and IDs used by the styles and interactions.
 
