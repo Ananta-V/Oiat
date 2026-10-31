@@ -1,0 +1,1091 @@
+/* OiAI Admin Dashboard Stylesheet */
+.admin-root {
+  min-height: 100vh;
+  background-color: #120c09;
+  color: #f6f0e6;
+  font-family: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 80px;
+}
+
+/* ================= LOGIN VIEW ================= */
+.admin-login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 20%, #2a1811 0%, #120c09 70%);
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #1b130f;
+  border: 1px solid rgba(198, 161, 91, 0.25);
+  border-radius: 12px;
+  padding: 40px 32px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+
+.admin-login-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid #c6a15b;
+  color: #dfc58b;
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.admin-login-card h1 {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 26px;
+  font-weight: 400;
+  margin: 0 0 8px;
+  color: #f6f0e6;
+}
+
+.admin-login-card p {
+  color: #ad9a89;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-form-group label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #c6a15b;
+  text-transform: uppercase;
+}
+
+.admin-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-input {
+  width: 100%;
+  height: 46px;
+  background: #241a15;
+  border: 1px solid rgba(246, 240, 230, 0.15);
+  border-radius: 6px;
+  padding: 0 42px 0 14px;
+  color: #f6f0e6;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #c6a15b;
+  box-shadow: 0 0 0 2px rgba(198, 161, 91, 0.2);
+}
+
+.admin-input-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #ad9a89;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.admin-input-btn:hover {
+  color: #f6f0e6;
+}
+
+.admin-login-btn {
+  width: 100%;
+  height: 46px;
+  background: #c6a15b;
+  color: #120c09;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-login-btn:hover:not(:disabled) {
+  background: #dfc58b;
+  transform: translateY(-1px);
+}
+
+.admin-login-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.admin-alert-error {
+  background: rgba(220, 53, 69, 0.15);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #ff8b8b;
+  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-login-hint {
+  font-size: 11px;
+  color: #8c7a6e;
+  margin-top: 24px;
+  line-height: 1.5;
+}
+
+/* ================= DASHBOARD LAYOUT ================= */
+.admin-header {
+  background: #170f0c;
+  border-bottom: 1px solid rgba(198, 161, 91, 0.2);
+  padding: 16px 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-header-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header-title h2 {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0;
+  color: #f6f0e6;
+  letter-spacing: -0.02em;
+}
+
+.admin-header-title span {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #c6a15b;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.admin-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.admin-badge-success {
+  background: rgba(40, 167, 69, 0.15);
+  border: 1px solid rgba(40, 167, 69, 0.35);
+  color: #75dd93;
+}
+
+.admin-badge-warning {
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  color: #ffc107;
+}
+
+.admin-badge-neutral {
+  background: rgba(246, 240, 230, 0.08);
+  border: 1px solid rgba(246, 240, 230, 0.15);
+  color: #ad9a89;
+}
+
+.admin-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(246, 240, 230, 0.2);
+  color: #f6f0e6;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.admin-btn-outline:hover {
+  border-color: #c6a15b;
+  color: #c6a15b;
+  background: rgba(198, 161, 91, 0.05);
+}
+
+.admin-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #ff8b8b;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-danger:hover {
+  background: rgba(220, 53, 69, 0.2);
+}
+
+/* ================= MAIN CONTAINER ================= */
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px;
+}
+
+/* ================= MISSING TABLE BANNER ================= */
+.admin-alert-banner {
+  background: #251a14;
+  border: 1px solid #d4af37;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.admin-alert-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #dfc58b;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.admin-alert-banner p {
+  color: #d8c8ba;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.admin-alert-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-btn-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #c6a15b;
+  color: #120c09;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-gold:hover {
+  background: #dfc58b;
+}
+
+/* ================= STATS GRID ================= */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.admin-stat-card {
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  border-radius: 10px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-stat-card:hover {
+  border-color: rgba(198, 161, 91, 0.3);
+  transform: translateY(-2px);
+}
+
+.admin-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #ad9a89;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-stat-value {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 32px;
+  color: #f6f0e6;
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.admin-stat-sub {
+  font-size: 12px;
+  color: #8c7a6e;
+}
+
+/* ================= TAB NAVIGATION ================= */
+.admin-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(246, 240, 230, 0.12);
+  margin-bottom: 24px;
+}
+
+.admin-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #ad9a89;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  top: 1px;
+}
+
+.admin-tab:hover {
+  color: #f6f0e6;
+}
+
+.admin-tab.active {
+  color: #dfc58b;
+  border-bottom-color: #c6a15b;
+}
+
+.admin-tab-count {
+  background: rgba(246, 240, 230, 0.1);
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+}
+
+.admin-tab.active .admin-tab-count {
+  background: rgba(198, 161, 91, 0.2);
+  color: #dfc58b;
+}
+
+/* ================= TOOLBAR ================= */
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.admin-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+}
+
+.admin-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c7a6e;
+}
+
+.admin-search-input {
+  width: 100%;
+  height: 38px;
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.15);
+  border-radius: 6px;
+  padding: 0 12px 0 36px;
+  color: #f6f0e6;
+  font-size: 13px;
+}
+
+.admin-search-input:focus {
+  outline: none;
+  border-color: #c6a15b;
+}
+
+.admin-select {
+  height: 38px;
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.15);
+  border-radius: 6px;
+  padding: 0 12px;
+  color: #f6f0e6;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.admin-select:focus {
+  outline: none;
+  border-color: #c6a15b;
+}
+
+.admin-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ================= FEEDBACK LIST ================= */
+.admin-feedbacks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-feedback-card {
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  border-radius: 10px;
+  padding: 20px 24px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.admin-feedback-card:hover {
+  border-color: rgba(198, 161, 91, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.admin-feedback-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.admin-feedback-user {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.admin-feedback-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f6f0e6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-feedback-context-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(198, 161, 91, 0.15);
+  color: #dfc58b;
+  font-weight: 500;
+}
+
+.admin-feedback-email {
+  font-size: 12px;
+  color: #ad9a89;
+}
+
+.admin-feedback-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #c6a15b;
+  font-size: 16px;
+}
+
+.admin-feelings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.admin-feeling-pill {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(246, 240, 230, 0.06);
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  color: #e7dccd;
+}
+
+.admin-feedback-message {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #f6f0e6;
+  background: rgba(0, 0, 0, 0.2);
+  border-left: 3px solid #c6a15b;
+  padding: 12px 16px;
+  border-radius: 0 6px 6px 0;
+  margin: 0 0 14px;
+}
+
+.admin-feedback-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 11px;
+  color: #8c7a6e;
+  border-top: 1px solid rgba(246, 240, 230, 0.07);
+  padding-top: 12px;
+}
+
+.admin-feedback-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-btn-icon-danger {
+  background: transparent;
+  border: none;
+  color: #ad9a89;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-icon-danger:hover {
+  color: #ff8b8b;
+  background: rgba(220, 53, 69, 0.15);
+}
+
+/* ================= SUBSCRIBERS TABLE ================= */
+.admin-table-card {
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.admin-table th {
+  background: #221813;
+  color: #c6a15b;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(246, 240, 230, 0.1);
+}
+
+.admin-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(246, 240, 230, 0.06);
+  color: #f6f0e6;
+}
+
+.admin-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ================= GUIDE TAB ================= */
+.admin-guide-card {
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  border-radius: 10px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.admin-guide-card h3 {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 20px;
+  margin: 0 0 12px;
+  color: #dfc58b;
+}
+
+.admin-guide-card p {
+  color: #d8c8ba;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.admin-code-block {
+  background: #0d0806;
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+  font-size: 12px;
+  color: #e0d0c0;
+  overflow-x: auto;
+  position: relative;
+  margin: 12px 0 20px;
+  line-height: 1.5;
+}
+
+.admin-copy-code-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #241a15;
+  border: 1px solid rgba(246, 240, 230, 0.2);
+  color: #f6f0e6;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.admin-copy-code-btn:hover {
+  border-color: #c6a15b;
+  color: #c6a15b;
+}
+
+.admin-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #8c7a6e;
+}
+
+.admin-empty-state h4 {
+  font-size: 16px;
+  color: #ad9a89;
+  margin: 8px 0;
+}
+
+/* ================= PRODUCTS TAB ================= */
+.admin-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.admin-product-card {
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.admin-product-card:hover {
+  border-color: rgba(198, 161, 91, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.admin-product-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: #120c09;
+  overflow: hidden;
+}
+
+.admin-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-product-status-pill {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-product-status-pill.active {
+  background: rgba(40, 167, 69, 0.2);
+  color: #5cd67c;
+  border: 1px solid rgba(40, 167, 69, 0.4);
+}
+
+.admin-product-status-pill.inactive {
+  background: rgba(108, 117, 125, 0.2);
+  color: #ad9a89;
+  border: 1px solid rgba(108, 117, 125, 0.4);
+}
+
+.admin-product-body {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.admin-product-category {
+  font-size: 11px;
+  color: #c6a15b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.admin-product-title {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 18px;
+  color: #f6f0e6;
+  margin: 0 0 6px;
+}
+
+.admin-product-desc {
+  font-size: 12px;
+  color: #ad9a89;
+  line-height: 1.5;
+  margin: 0 0 16px;
+  flex: 1;
+}
+
+.admin-product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(246, 240, 230, 0.08);
+}
+
+.admin-product-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f6f0e6;
+}
+
+.admin-product-price small {
+  font-size: 12px;
+  color: #ad9a89;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* ================= ORDERS TAB ================= */
+.admin-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-order-card {
+  background: #1b130f;
+  border: 1px solid rgba(246, 240, 230, 0.1);
+  border-radius: 10px;
+  padding: 22px 24px;
+  transition: all 0.2s ease;
+}
+
+.admin-order-card:hover {
+  border-color: rgba(198, 161, 91, 0.3);
+}
+
+.admin-order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(246, 240, 230, 0.08);
+  margin-bottom: 16px;
+}
+
+.admin-order-id-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-order-id {
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: #dfc58b;
+}
+
+.admin-order-date {
+  font-size: 12px;
+  color: #8c7a6e;
+}
+
+.admin-order-status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-status-pending_verification {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.admin-status-confirmed {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.admin-status-dispatched {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.admin-status-delivered {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.admin-status-cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.admin-order-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .admin-order-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-order-info-section h5 {
+  font-size: 11px;
+  color: #c6a15b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+}
+
+.admin-order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.admin-order-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #f6f0e6;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.admin-order-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f6f0e6;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(246, 240, 230, 0.1);
+}
+
+.admin-order-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(246, 240, 230, 0.08);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25d366;
+  color: #111;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.admin-whatsapp-btn:hover {
+  background: #20ba59;
+  transform: translateY(-1px);
+}
+
+/* ================= MODAL DIALOGS ================= */
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.admin-modal-card {
+  background: #1b130f;
+  border: 1px solid rgba(198, 161, 91, 0.35);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+.admin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(246, 240, 230, 0.1);
+}
+
+.admin-modal-header h3 {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 22px;
+  color: #dfc58b;
+  margin: 0;
+}
+
+.admin-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 500px) {
+  .admin-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+

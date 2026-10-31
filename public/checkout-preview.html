@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OiAI — Product Detail &amp; UPI Checkout Preview</title>
+  <link rel="stylesheet" href="/src/app/globals.css">
+  <style>
+    :root {
+      --espresso: #211510;
+      --espresso-deep: #170f0c;
+      --cocoa: #493024;
+      --cream: #f6f0e6;
+      --cream-muted: #e7dccd;
+      --gold: #c6a15b;
+      --gold-light: #dfc58b;
+      --taupe: #ad9a89;
+      --line: rgba(246, 240, 230, 0.15);
+      --serif: "Iowan Old Style", "Baskerville", Georgia, serif;
+      --sans: "Avenir Next", Avenir, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #150e0b;
+      color: var(--cream);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-container {
+      width: 100%;
+      max-width: 840px;
+      background: #1f1510;
+      border: 1px solid rgba(198, 161, 91, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+      overflow: hidden;
+      position: relative;
+    }
+    .modal-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 520px;
+    }
+    @media (max-width: 768px) {
+      .modal-layout { grid-template-columns: 1fr; }
+    }
+    .modal-left {
+      background: #170f0c;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--line);
+      position: relative;
+    }
+    .product-img {
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid rgba(198, 161, 91, 0.2);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    }
+    .badge-pill {
+      margin-top: 14px;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(198, 161, 91, 0.12);
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(198, 161, 91, 0.25);
+    }
+    .modal-right {
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    h2.product-title {
+      font-family: var(--serif);
+      font-size: 34px;
+      color: var(--cream);
+      margin: 8px 0;
+      font-weight: 400;
+    }
+    .product-tagline {
+      font-style: italic;
+      color: var(--gold-light);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .product-desc {
+      font-size: 13px;
+      color: #c9b9aa;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .price-highlight-box {
+      background: rgba(198, 161, 91, 0.08);
+      border: 1px solid rgba(198, 161, 91, 0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .price-num {
+      font-family: var(--serif);
+      font-size: 30px;
+      color: #dfc58b;
+      font-weight: 600;
+    }
+    .price-sub {
+      font-size: 11px;
+      color: var(--taupe);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+    .qty-counter {
+      display: inline-flex;
+      align-items: center;
+      background: #170f0c;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .qty-btn {
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: none;
+      color: var(--cream);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-btn:hover { background: rgba(198, 161, 91, 0.2); color: var(--gold); }
+    .qty-num {
+      width: 36px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold-light);
+    }
+    .btn-order {
+      width: 100%;
+      height: 48px;
+      background: var(--gold);
+      color: #150e0b;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+    .btn-order:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+    /* STEP 2: CHECKOUT & PAYMENT */
+    .step-section { display: none; }
+    .step-section.active { display: block; }
+    .form-input {
+      width: 100%;
+      height: 42px;
+      background: #170f0c;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 12px;
+      color: var(--cream);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .form-input:focus { outline: none; border-color: var(--gold); }
+    .qr-container {
+      text-align: center;
+      padding: 16px;
+      background: #fff;
+      border-radius: 8px;
+      display: inline-block;
+      margin: 12px 0;
+    }
+    .qr-img { width: 170px; height: 170px; display: block; }
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 42px;
+      background: #25D366;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="modal-container">
+    <!-- STEP 1: PRODUCT DETAILS -->
+    <div id="step-product" class="step-section active">
+      <div class="modal-layout">
+        <div class="modal-left">
+          <img id="p-img" class="product-img" src="/images/oiai/photo-milkPralines-02cd3864aed0.jpg" alt="Secret Crush" />
+          <span id="p-badge" class="badge-pill">A NUTTY LITTLE SECRET</span>
+        </div>
+        <div class="modal-right">
+          <div>
+            <div id="p-kind" class="eyebrow">DARK CHOCOLATE · FILLED CENTRES</div>
+            <h2 id="p-title" class="product-title">Secret Crush</h2>
+            <div id="p-tagline" class="product-tagline">“A little nut. A lot of feelings.”</div>
+            <p id="p-desc" class="product-desc">
+              A dark chocolate shell with a roasted almond waiting in the middle. Shy, romantic, full of surprises. Made fresh in small batches with love.
+            </p>
+
+            <div class="price-highlight-box">
+              <div>
+                <span class="price-num">₹<span id="p-price">349</span></span>
+              </div>
+              <span class="price-sub">Box of 6 · Handcrafted</span>
+            </div>
+
+            <div class="qty-row">
+              <span style="font-size: 13px; color: var(--taupe);">Quantity:</span>
+              <div class="qty-counter">
+                <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+                <span id="qty-val" class="qty-num">1</span>
+                <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+              </div>
+              <span style="font-size: 13px; font-weight: 600;">Total: ₹<span id="p-total">349</span></span>
+            </div>
+          </div>
+
+          <button type="button" class="btn-order" onclick="goToCheckout()">
+            <span>Proceed to Order (₹<span id="btn-total">349</span>)</span>
+            <span>↗</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: CUSTOMER DETAILS & UPI PAYMENT -->
+    <div id="step-checkout" class="step-section" style="padding: 32px 28px;">
+      <div class="eyebrow">STEP 2 OF 2 · DELIVERY &amp; UPI PAYMENT</div>
+      <h2 class="product-title" style="font-size: 26px; margin-bottom: 16px;">Complete Your Order</h2>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Left: Form -->
+        <div>
+          <label class="eyebrow" style="display:block; margin-bottom: 6px;">Your Name *</label>
+          <input id="cust-name" class="form-input" placeholder="What should we call you?" required />
+
+          <label class="eyebrow" style="display:block; margin-bottom: 6px;">Phone / WhatsApp Number *</label>
+          <input id="cust-phone" class="form-input" placeholder="+91 98765 43210" required />
+
+          <label class="eyebrow" style="display:block; margin-bottom: 6px;">Delivery Address *</label>
+          <input id="cust-address" class="form-input" placeholder="Flat, Street, Area..." required />
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label class="eyebrow" style="display:block; margin-bottom: 6px;">City</label>
+              <input id="cust-city" class="form-input" value="Hyderabad" />
+            </div>
+            <div>
+              <label class="eyebrow" style="display:block; margin-bottom: 6px;">Pincode</label>
+              <input id="cust-pin" class="form-input" placeholder="500001" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: UPI & QR -->
+        <div style="background: #170f0c; padding: 20px; border-radius: 8px; border: 1px solid var(--line); text-align: center;">
+          <div style="font-size: 13px; color: var(--gold-light); font-weight: 600;">Scan to Pay via Any UPI App</div>
+          <div class="qr-container">
+            <img id="upi-qr" class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi%3A%2F%2Fpay%3Fpa%3D8125107227%40upi%26pn%3DOiAI%20Chocolates%26am%3D349%26cu%3DINR" alt="UPI QR" />
+          </div>
+
+          <div style="font-size: 12px; margin-bottom: 8px; color: var(--taupe);">
+            UPI ID: <strong style="color: #dfc58b;">8125107227@upi</strong>
+          </div>
+
+          <div style="text-align: left; margin-top: 12px;">
+            <label class="eyebrow" style="display:block; margin-bottom: 6px;">Enter 12-Digit UPI Ref / UTR *</label>
+            <input id="cust-utr" class="form-input" placeholder="e.g. 430129482910" required />
+
+            <label class="eyebrow" style="display:block; margin-bottom: 6px;">Attach Payment Screenshot (optional)</label>
+            <input id="cust-file" type="file" accept="image/*" class="form-input" style="padding-top: 8px;" />
+          </div>
+
+          <button type="button" class="btn-order" onclick="submitOrder()" style="margin-top: 12px;">
+            Confirm &amp; Place Order ♥
+          </button>
+
+          <!-- WHATSAPP TROUBLE BUTTON -->
+          <a id="wa-btn" href="https://wa.me/918125107227?text=Hi%20OiAI%20Chocolates!%20I%20have%20trouble%20paying%20for%20my%20order." target="_blank" class="whatsapp-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-5.46-4.45-9.92-9.91-9.92zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31c-.82-1.31-1.26-2.83-1.26-4.38 0-4.54 3.7-8.24 8.24-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.54-3.7 8.24-8.24 8.24zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.35-.76-1.85c-.2-.49-.4-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.57.12.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.53.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
+            <span>Trouble paying? Chat on WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: SUCCESS STATE -->
+    <div id="step-success" class="step-section" style="padding: 48px 32px; text-align: center;">
+      <div style="font-size: 40px; color: var(--gold); margin-bottom: 12px;">♥</div>
+      <h2 class="product-title" style="font-size: 32px;">Order Placed with Love!</h2>
+      <p style="color: #c9b9aa; font-size: 14px; max-width: 440px; margin: 12px auto 24px; line-height: 1.6;">
+        Thank you, <strong id="succ-name">Friend</strong>! Your order <strong id="succ-order-id">#OIAI-123456</strong> and UPI UTR have been recorded. Our tiny kitchen in Hyderabad is getting your chocolate box ready.
+      </p>
+      <a id="succ-wa-link" href="https://wa.me/918125107227" target="_blank" class="whatsapp-btn" style="max-width: 300px; margin: 0 auto;">
+        <span>Track or chat on WhatsApp</span>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    let price = 349;
+    let qty = 1;
+    let productName = "Secret Crush";
+
+    function changeQty(delta) {
+      qty = Math.max(1, Math.min(99, qty + delta));
+      document.getElementById('qty-val').innerText = qty;
+      const total = price * qty;
+      document.getElementById('p-total').innerText = total;
+      document.getElementById('btn-total').innerText = total;
+      updateQr(total);
+    }
+
+    function updateQr(total) {
+      const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent("upi://pay?pa=8125107227@upi&pn=OiAI Chocolates&am=" + total + "&cu=INR&tn=Order for " + productName);
+      document.getElementById('upi-qr').src = qrUrl;
+    }
+
+    function goToCheckout() {
+      document.getElementById('step-product').classList.remove('active');
+      document.getElementById('step-checkout').classList.add('active');
+    }
+
+    function submitOrder() {
+      const name = document.getElementById('cust-name').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim();
+      const address = document.getElementById('cust-address').value.trim();
+      const utr = document.getElementById('cust-utr').value.trim();
+
+      if (!name || !phone || !address || !utr) {
+        alert("Please fill in your name, phone, address, and UPI Transaction ID / UTR.");
+        return;
+      }
+
+      document.getElementById('step-checkout').classList.remove('active');
+      document.getElementById('step-success').classList.add('active');
+      document.getElementById('succ-name').innerText = name;
+      document.getElementById('succ-order-id').innerText = "#OIAI-" + Math.floor(100000 + Math.random() * 900000);
+    }
+  </script>
+</body>
+</html>
+
