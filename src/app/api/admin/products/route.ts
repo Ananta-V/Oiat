@@ -44,25 +44,24 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Check if seed request
-    if (body.seed) {
+    // Rename category across all products in Supabase
+    if (body.renameCategory) {
+      const { from, to } = body.renameCategory;
+      if (!from || !to || !to.trim()) {
+        return NextResponse.json({ error: "From and To category names required." }, { status: 400 });
+      }
       const supabase = getSupabaseAdmin();
-      const seedItems = FALLBACK_PRODUCTS.map((p) => ({
-        ...p,
-        is_active: true,
-        updated_at: new Date().toISOString(),
-      }));
-
       const { data, error } = await supabase
         .from("products")
-        .upsert(seedItems, { onConflict: "id" })
+        .update({ category: to.trim(), updated_at: new Date().toISOString() })
+        .eq("category", from)
         .select();
 
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
-      return NextResponse.json({ success: true, count: data?.length || 0, products: data });
+      return NextResponse.json({ success: true, count: data?.length || 0, updated: data });
     }
 
     if (!body.id || !body.name || body.price === undefined) {

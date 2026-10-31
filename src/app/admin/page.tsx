@@ -111,7 +111,6 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [productModalTab, setProductModalTab] = useState<"card" | "detail">("card");
   const [isSavingProduct, setIsSavingProduct] = useState(false);
-  const [isCustomCategoryInput, setIsCustomCategoryInput] = useState(false);
 
   // Category management state
   const [showCategoryMgr, setShowCategoryMgr] = useState(false);
@@ -119,13 +118,36 @@ export default function AdminPage() {
   const [renameFromCat, setRenameFromCat] = useState("");
   const [renameToCat, setRenameToCat] = useState("");
   const [isRenamingCat, setIsRenamingCat] = useState(false);
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
 
   // Order viewing modal state
   const [viewingOrder, setViewingOrder] = useState<OrderItem | null>(null);
 
+  // Load custom categories from local storage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("oiai-admin-categories");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setCustomCategories(parsed);
+      }
+    } catch (_) {}
+  }, []);
+
   // Initial Auth Check
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { checkAuthAndLoad(); }, []);
+
+  // Auto-refresh admin data every 5 seconds
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      loadProducts();
+      loadOrders();
+      loadFeedbacks();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   async function checkAuthAndLoad() {
     setIsLoadingData(true);
@@ -242,33 +264,11 @@ export default function AdminPage() {
 
       await loadProducts();
       setEditingProduct(null);
-      setIsCustomCategoryInput(false);
     } catch (err) {
       console.error(err);
       alert("Error saving product changes");
     } finally {
       setIsSavingProduct(false);
-    }
-  }
-
-  async function handleSeedProducts() {
-    if (!confirm("This will seed standard chocolate menu items into Supabase. Continue?")) return;
-    try {
-      const res = await fetch("/api/admin/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seed: true }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`Seeded ${data.count} chocolate items into Supabase.`);
-        await loadProducts();
-      } else {
-        alert(data.error || "Failed seeding products");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Error triggering seed");
     }
   }
 
@@ -320,29 +320,65 @@ export default function AdminPage() {
     }
   }
 
+  function handleCreateCategory() {
+    const trimmed = newCatName.trim();
+    if (!trimmed) {
+      alert("Please enter a category name");
+      return;
+    }
+    if (allCategories.includes(trimmed)) {
+      alert(`Category "${trimmed}" already exists.`);
+      return;
+    }
+    const updated = [...customCategories, trimmed];
+    setCustomCategories(updated);
+    try {
+      localStorage.setItem("oiai-admin-categories", JSON.stringify(updated));
+    } catch (_) {}
+    setNewCatName("");
+    alert(`Category "${trimmed}" created! You can now select it when adding or editing products.`);
+  }
+
   async function handleRenameCategory() {
-    if (!renameFromCat || !renameToCat.trim()) {
+    const from = renameFromCat.trim();
+    const to = renameToCat.trim();
+    if (!from || !to) {
       alert("Please select a category and enter the new name.");
+      return;
+    }
+    if (from === to) {
+      alert("Old and new category names are the same.");
       return;
     }
     setIsRenamingCat(true);
     try {
-      const matching = products.filter((p) => p.category === renameFromCat);
-      for (const prod of matching) {
-        await fetch("/api/admin/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...prod, category: renameToCat.trim() }),
-        });
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          renameCategory: { from, to },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed renaming category");
       }
+
+      // Update customCategories in state & local storage
+      const updatedCats = customCategories.map((c) => (c === from ? to : c));
+      if (!updatedCats.includes(to)) updatedCats.push(to);
+      setCustomCategories(updatedCats);
+      try {
+        localStorage.setItem("oiai-admin-categories", JSON.stringify(updatedCats));
+      } catch (_) {}
+
       await loadProducts();
       setRenameFromCat("");
       setRenameToCat("");
-      setShowCategoryMgr(false);
-      alert(`Renamed category to "${renameToCat.trim()}" across ${matching.length} products.`);
-    } catch (e) {
+      alert(`Renamed category "${from}" to "${to}" across ${data.count || 0} product(s).`);
+    } catch (e: any) {
       console.error("Rename failed", e);
-      alert("Could not rename category.");
+      alert(e.message || "Could not rename category.");
     } finally {
       setIsRenamingCat(false);
     }
@@ -372,15 +408,18 @@ export default function AdminPage() {
     document.body.removeChild(link);
   }
 
-  // All distinct categories
+  // All distinct categories (products + standard menu + custom categories)
   const allCategories = useMemo(() => {
     const cats = new Set<string>();
     products.forEach((p) => {
-      if (p.category) cats.add(p.category);
+      if (p.category) cats.add(p.category.trim());
     });
     ["Filled Centres", "Crunch & Crisps", "Milk & Marble", "Plain Dark", "Nutty Packs"].forEach((c) => cats.add(c));
+    customCategories.forEach((c) => {
+      if (c && c.trim()) cats.add(c.trim());
+    });
     return Array.from(cats);
-  }, [products]);
+  }, [products, customCategories]);
 
   // Filtered products
   const filteredProducts = useMemo(() => {
@@ -634,10 +673,6 @@ export default function AdminPage() {
               </div>
 
               <div className="admin-toolbar-right">
-                <button onClick={handleSeedProducts} className="admin-btn-outline" type="button" title="Seed default chocolate items into Supabase">
-                  <RefreshCw size={13} />
-                  <span>Seed Standard Menu</span>
-                </button>
                 <button
                   onClick={() => {
                     setEditingProduct({
@@ -658,7 +693,6 @@ export default function AdminPage() {
                       is_active: true,
                     });
                     setProductModalTab("card");
-                    setIsCustomCategoryInput(false);
                   }}
                   className="admin-btn-gold"
                   type="button"
@@ -684,30 +718,20 @@ export default function AdminPage() {
                       placeholder="e.g. Seasonal Gift Hampers"
                       value={newCatName}
                       onChange={(e) => setNewCatName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleCreateCategory();
+                        }
+                      }}
                     />
                     <button
                       type="button"
                       className="admin-btn-gold"
                       style={{ padding: "0 14px", height: 34, fontSize: 12, whiteSpace: "nowrap" }}
-                      onClick={() => {
-                        if (newCatName.trim()) {
-                          setEditingProduct({
-                            id: String(Date.now()),
-                            name: "",
-                            price: 349,
-                            category: newCatName.trim(),
-                            kind: "SPECIAL EDITION",
-                            badge: "NEW CATEGORY",
-                            image: "/images/oiai/photo-milkPralines-02cd3864aed0.jpg",
-                            weight: "Box of 6 pieces (120g)",
-                            is_active: true,
-                          });
-                          setNewCatName("");
-                          setShowCategoryMgr(false);
-                        }
-                      }}
+                      onClick={handleCreateCategory}
                     >
-                      Create &amp; Add Item
+                      + Create Category
                     </button>
                   </div>
                 </div>
@@ -735,6 +759,12 @@ export default function AdminPage() {
                       placeholder="New Name…"
                       value={renameToCat}
                       onChange={(e) => setRenameToCat(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleRenameCategory();
+                        }
+                      }}
                     />
                     <button
                       type="button"
@@ -750,12 +780,12 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* PRODUCT GRID */}
+            {/* PRODUCT GRID (COMPACT ROWS & COLUMNS) */}
             {filteredProducts.length === 0 ? (
               <div className="admin-empty-state">
                 <Package size={40} />
                 <h4>No chocolate items found</h4>
-                <p>Seed the standard menu or add custom pieces using the button above.</p>
+                <p>Add custom chocolate pieces using the button above.</p>
               </div>
             ) : (
               <div className="admin-product-grid">
@@ -771,36 +801,37 @@ export default function AdminPage() {
                           (e.target as HTMLImageElement).src = "/images/oiai/photo-milkPralines-02cd3864aed0.jpg";
                         }}
                       />
-                      <span className="admin-product-cat-tag">{p.category}</span>
-                      {p.is_active === false && (
-                        <span className="admin-product-cat-tag" style={{ background: "#8b2010", left: "auto", right: 8 }}>
-                          Inactive
-                        </span>
-                      )}
                     </div>
                     <div className="admin-product-body">
                       <div className="admin-product-header-row">
+                        <span className="admin-product-cat-tag">{p.category}</span>
+                        {p.is_active === false && (
+                          <span className="admin-badge" style={{ background: "rgba(139,32,16,0.3)", color: "#ff8c7a", fontSize: 9, padding: "2px 6px" }}>
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                      <div className="admin-product-header-row" style={{ marginTop: 2 }}>
                         <h4>{p.name}</h4>
-                        <span className="admin-badge admin-badge-gold">{p.badge || "SMALL BATCH"}</span>
+                        <span className="admin-badge admin-badge-gold" style={{ fontSize: 9 }}>{p.badge || "SMALL BATCH"}</span>
                       </div>
                       {p.tagline && <p className="admin-product-tagline">“{p.tagline}”</p>}
-                      <p className="admin-product-desc">{p.description || "Fresh homemade chocolate."}</p>
 
                       <div className="admin-product-footer">
                         <div className="admin-product-price">
                           ₹{p.price}
-                          <small>{p.weight || ""}</small>
+                          <small>{p.weight ? `· ${p.weight}` : ""}</small>
                         </div>
                         <button
                           type="button"
                           className="admin-btn-outline"
+                          style={{ padding: "4px 10px", fontSize: 11 }}
                           onClick={() => {
                             setEditingProduct(p);
                             setProductModalTab("card");
-                            setIsCustomCategoryInput(false);
                           }}
                         >
-                          <Edit size={13} />
+                          <Edit size={12} />
                           <span>Edit</span>
                         </button>
                       </div>
@@ -835,7 +866,6 @@ export default function AdminPage() {
                   <option value="all">All Statuses ({orders.length})</option>
                   <option value="pending_verification">Pending Verification</option>
                   <option value="verified">Verified</option>
-                  <option value="confirmed">Confirmed</option>
                   <option value="dispatched">Dispatched</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
@@ -1239,45 +1269,16 @@ export default function AdminPage() {
                   <div className="admin-form-row">
                     <div className="admin-form-group">
                       <label>Category *</label>
-                      {!isCustomCategoryInput ? (
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <select
-                            className="admin-input"
-                            value={editingProduct.category}
-                            onChange={(e) => {
-                              if (e.target.value === "__CUSTOM__") {
-                                setIsCustomCategoryInput(true);
-                              } else {
-                                setEditingProduct({ ...editingProduct, category: e.target.value });
-                              }
-                            }}
-                          >
-                            {allCategories.map((cat) => (
-                              <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                            <option value="__CUSTOM__">+ New Custom Category…</option>
-                          </select>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <input
-                            type="text"
-                            className="admin-input"
-                            placeholder="Enter new category name…"
-                            value={editingProduct.category}
-                            onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                            required
-                          />
-                          <button
-                            type="button"
-                            className="admin-btn-outline"
-                            style={{ padding: "0 10px", fontSize: 11 }}
-                            onClick={() => setIsCustomCategoryInput(false)}
-                          >
-                            List
-                          </button>
-                        </div>
-                      )}
+                      <select
+                        className="admin-input"
+                        value={editingProduct.category}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                        required
+                      >
+                        {allCategories.map((cat) => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="admin-form-group">
                       <label>Sub-Kind / Headline</label>

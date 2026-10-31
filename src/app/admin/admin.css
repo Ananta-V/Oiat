@@ -760,114 +760,123 @@
   margin: 8px 0;
 }
 
-/* ================= PRODUCTS TAB ================= */
-.admin-products-grid {
+/* ================= PRODUCTS TAB (COMPACT ROWS & COLUMNS) ================= */
+.admin-products-grid,
+.admin-product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  gap: 12px;
 }
 
 .admin-product-card {
-  background: #1b130f;
-  border: 1px solid rgba(246, 240, 230, 0.1);
+  background: #1a120d;
+  border: 1px solid rgba(198, 161, 91, 0.2);
   border-radius: 10px;
-  overflow: hidden;
+  padding: 12px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
   transition: all 0.2s ease;
 }
 
 .admin-product-card:hover {
-  border-color: rgba(198, 161, 91, 0.35);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border-color: rgba(198, 161, 91, 0.45);
+  background: #221812;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
+.admin-product-img-box,
 .admin-product-img-wrap {
   position: relative;
-  width: 100%;
-  height: 180px;
-  background: #120c09;
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
+  border-radius: 8px;
   overflow: hidden;
+  background: #120c09;
+  border: 1px solid rgba(198, 161, 91, 0.25);
+  flex-shrink: 0;
 }
 
+.admin-product-thumb,
 .admin-product-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.admin-product-status-pill {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.admin-product-status-pill.active {
-  background: rgba(40, 167, 69, 0.2);
-  color: #5cd67c;
-  border: 1px solid rgba(40, 167, 69, 0.4);
-}
-
-.admin-product-status-pill.inactive {
-  background: rgba(108, 117, 125, 0.2);
-  color: #ad9a89;
-  border: 1px solid rgba(108, 117, 125, 0.4);
+  display: block;
 }
 
 .admin-product-body {
-  padding: 18px 20px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  gap: 3px;
   flex: 1;
+  min-width: 0;
+  padding: 0;
 }
 
-.admin-product-category {
-  font-size: 11px;
-  color: #c6a15b;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 4px;
+.admin-product-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.admin-product-title {
+.admin-product-header-row h4 {
   font-family: "Iowan Old Style", Georgia, serif;
-  font-size: 18px;
+  font-size: 15px;
+  font-weight: 700;
   color: #f6f0e6;
-  margin: 0 0 6px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-product-cat-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #dfc58b;
+  text-transform: uppercase;
+}
+
+.admin-product-tagline {
+  font-size: 11px;
+  font-style: italic;
+  color: #ad9a89;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-product-desc {
-  font-size: 12px;
-  color: #ad9a89;
-  line-height: 1.5;
-  margin: 0 0 16px;
-  flex: 1;
+  display: none;
 }
 
 .admin-product-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 14px;
-  border-top: 1px solid rgba(246, 240, 230, 0.08);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(198, 161, 91, 0.15);
 }
 
 .admin-product-price {
-  font-size: 20px;
-  font-weight: 700;
-  color: #f6f0e6;
+  font-size: 15px;
+  font-weight: 800;
+  color: #dfc58b;
 }
 
 .admin-product-price small {
-  font-size: 12px;
-  color: #ad9a89;
-  font-weight: 400;
+  font-size: 10px;
+  font-weight: 500;
+  color: #8c7665;
   margin-left: 4px;
 }
 
