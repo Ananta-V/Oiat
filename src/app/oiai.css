@@ -2186,27 +2186,58 @@ body.intro-active { overflow:hidden !important; }
    OiAI Detailed Product & UPI Checkout Modal System
 ============================================================ */
 .quick-view-modal {
-  width: min(860px, calc(100% - 24px)) !important;
-  max-height: min(720px, calc(100dvh - 32px)) !important;
+  position: fixed !important;
+  z-index: 1000 !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: min(880px, calc(100% - 24px)) !important;
+  max-height: min(780px, calc(100dvh - 32px)) !important;
   background: #fbf5eb !important;
   border: 1px solid #c49f78 !important;
   border-radius: 12px !important;
   box-shadow: 0 25px 80px rgba(35, 14, 6, 0.45) !important;
   padding: 0 !important;
   overflow: hidden !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -48%) scale(0.96);
+  transition: opacity 0.3s ease, transform 0.35s ease;
+}
+
+.quick-view-modal.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+.modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 900 !important;
+  background: rgba(37, 14, 6, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .qv-scroll-wrap {
-  max-height: min(720px, calc(100dvh - 32px));
+  max-height: min(780px, calc(100dvh - 32px));
   overflow-y: auto;
-  padding: 28px;
+  padding: 24px 28px;
 }
 
 .qv-step {
-  display: none;
+  display: none !important;
 }
-.qv-step.is-active {
-  display: block;
+.qv-step.is-active,
+.qv-step:not([hidden]) {
+  display: block !important;
   animation: qv-fade-in 0.3s ease both;
 }
 
@@ -2217,8 +2248,8 @@ body.intro-active { overflow:hidden !important; }
 
 .qv-layout-grid {
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 32px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.25fr);
+  gap: 28px;
   align-items: start;
 }
 
@@ -2232,40 +2263,92 @@ body.intro-active { overflow:hidden !important; }
 .qv-left-column {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: #f1e4d3;
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #ddc4a9;
+  position: relative;
+}
+
+.qv-photo-stage {
+  position: relative;
+  padding: 12px;
+  background: #ead8b9;
+  border: 1px solid #c9a77e;
+  border-radius: 4px;
+  box-shadow: 6px 10px 0 rgba(75, 30, 13, 0.05), 0 14px 28px rgba(75, 30, 13, 0.1);
+  transform: rotate(0.3deg);
+}
+
+.qv-photo-tape {
+  position: absolute;
+  z-index: 3;
+  width: 90px;
+  height: 22px;
+  left: calc(50% - 45px);
+  top: -9px;
+  background: rgba(202, 166, 119, 0.8);
+  border-left: 1px dashed rgba(75, 30, 13, 0.2);
+  border-right: 1px dashed rgba(75, 30, 13, 0.2);
+  transform: rotate(-1.5deg);
+}
+
+.qv-photo-window {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #d7b68c;
+  border-radius: 2px;
 }
 
 .qv-main-photo {
   width: 100%;
-  max-height: 340px;
-  aspect-ratio: 1;
+  height: 100%;
   object-fit: cover;
-  border-radius: 6px;
-  box-shadow: 0 10px 25px rgba(50, 20, 10, 0.15);
-  border: 1px solid #d8b894;
+  display: block;
+  filter: sepia(0.08) saturate(0.95);
+  transition: transform 0.4s ease;
+}
+.qv-photo-stage:hover .qv-main-photo {
+  transform: scale(1.03);
 }
 
-.qv-badge-pill {
-  margin-top: 14px;
-  font-size: 9px;
+.qv-photo-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 8px;
+  font-size: 8px;
   font-weight: 800;
-  letter-spacing: 0.14em;
-  color: #79512d;
-  background: #fbf5eb;
-  padding: 5px 14px;
+  letter-spacing: 1px;
+  color: #7b4e2d;
+}
+.qv-photo-caption small {
+  font-size: 7px;
+  color: #9c6c45;
+}
+.qv-photo-caption em {
+  font-family: var(--hand, cursive);
+  font-size: 15px;
+  color: #8c4c2b;
+  font-weight: 600;
+}
+
+.qv-gallery-stamp {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #f1e2cd;
+  border: 1px solid #d4b593;
   border-radius: 999px;
-  border: 1px solid #d7b58c;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #5c351b;
   text-transform: uppercase;
 }
-
-.qv-weight-note {
-  font-size: 11px;
-  color: #8c6a50;
-  margin-top: 8px;
+.qv-gallery-stamp b {
+  font-family: var(--display, Georgia, serif);
+  font-size: 13px;
+  color: #3b190c;
 }
 
 .qv-right-column {
@@ -2274,44 +2357,45 @@ body.intro-active { overflow:hidden !important; }
 }
 
 .qv-eyebrow {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.16em;
   color: #a86b3b;
   text-transform: uppercase;
+  margin-bottom: 4px;
 }
 
 .qv-product-name {
-  font-family: var(--display, "Iowan Old Style", Georgia, serif);
-  font-size: 38px;
-  line-height: 0.95;
+  font-family: var(--display, Georgia, serif);
+  font-size: 34px;
+  line-height: 1;
   color: #2b1207;
-  margin: 8px 0;
+  margin: 4px 0 6px;
 }
 
 .qv-tagline-quote {
   font-style: italic;
   color: #824b26;
-  font-size: 14px;
+  font-size: 13px;
   margin-bottom: 12px;
 }
 
-.qv-description-body {
-  font-size: 13px;
-  line-height: 1.7;
-  color: #5d3f2b;
-  margin-bottom: 16px;
+.qv-micro-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
 }
-
-.qv-tasting-box {
-  background: #f2e6d6;
-  border-left: 3px solid #b58055;
-  padding: 10px 14px;
-  border-radius: 0 6px 6px 0;
-  font-size: 12px;
-  color: #4f3422;
-  margin-bottom: 20px;
-  line-height: 1.5;
+.qv-micro-tag {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #6d4629;
+  background: #eee0cb;
+  border: 1px solid #d4ba9c;
+  padding: 3px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
 }
 
 .qv-price-highlight-card {
@@ -2321,40 +2405,73 @@ body.intro-active { overflow:hidden !important; }
   background: #edd9c2;
   border: 1px solid #cb9e72;
   border-radius: 8px;
-  padding: 12px 18px;
-  margin-bottom: 18px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
 }
 
 .qv-price-bold {
   font-family: var(--display, Georgia, serif);
-  font-size: 34px;
+  font-size: 30px;
   color: #3b190c;
   font-weight: 700;
 }
 
-.qv-price-bold span {
-  font-size: 20px;
-  font-weight: 600;
+.qv-price-unit {
+  font-size: 11px;
+  font-weight: 700;
+  color: #824c25;
 }
 
-.qv-price-tax-badge {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #824c25;
+.qv-description-body {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #5d3f2b;
+  margin-bottom: 14px;
+}
+
+.qv-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #dcc4a8;
+  border-bottom: 1px solid #dcc4a8;
+  padding: 10px 0;
+  margin-bottom: 16px;
+}
+.qv-detail-item {
+  display: grid;
+  grid-template-columns: 95px 1fr;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.qv-detail-label {
+  font-weight: 800;
+  color: #8c522f;
   text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+.qv-detail-val {
+  color: #3b1c0e;
 }
 
 .qv-quantity-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 0;
-  border-top: 1px solid #d9be9e;
-  border-bottom: 1px solid #d9be9e;
-  margin-bottom: 20px;
+  background: #f4e8d8;
+  border: 1px solid #d9be9e;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
 }
-
+.qv-qty-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #6e4528;
+  text-transform: uppercase;
+}
 .qv-qty-controls {
   display: inline-flex;
   align-items: center;
@@ -2363,13 +2480,12 @@ body.intro-active { overflow:hidden !important; }
   border-radius: 6px;
   overflow: hidden;
 }
-
 .qv-qty-btn {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   background: #f8eee0;
   border: none;
-  font-size: 20px;
+  font-size: 18px;
   color: #3b190c;
   cursor: pointer;
   display: flex;
@@ -2380,28 +2496,18 @@ body.intro-active { overflow:hidden !important; }
 .qv-qty-btn:hover {
   background: #e9d3b9;
 }
-
-.qv-qty-val {
-  width: 44px;
+.qv-qty-display {
+  width: 36px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #2b1207;
 }
-
-.qv-subtotal-val {
-  font-size: 14px;
-  color: #4f3422;
-}
-.qv-subtotal-val strong {
-  font-size: 18px;
-  color: #2b1207;
-}
-
-.qv-actions-row {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.qv-qty-total {
+  font-family: var(--display, Georgia, serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: #3b190c;
 }
 
 .qv-order-primary-btn {
@@ -2410,128 +2516,223 @@ body.intro-active { overflow:hidden !important; }
   justify-content: center;
   gap: 10px;
   width: 100%;
-  height: 48px;
-  background: #2b1207;
-  color: #fbf5eb;
-  border: none;
-  border-radius: 6px;
+  min-height: 48px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #3b190c 0%, #632d15 100%);
+  color: #fcf4e8;
+  border: 1px solid #2b1007;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(59, 25, 12, 0.25);
   transition: all 0.2s ease;
 }
 .qv-order-primary-btn:hover {
-  background: #4a210f;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #4d2110 0%, #7b381a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(59, 25, 12, 0.35);
 }
 
-.qv-taste-link-btn {
+.qv-feedback-link-row {
+  margin-top: 10px;
+  text-align: center;
+}
+.qv-text-link {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: #8c5531;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.qv-text-link:hover {
+  color: #3b190c;
+}
+
+/* ================= STEP 2: CHECKOUT ================= */
+.qv-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   font-size: 12px;
-  color: #8b562e;
+  font-weight: 700;
+  color: #8c4c2b;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-align: center;
-  padding: 6px;
+  padding: 0 0 14px;
 }
-.qv-taste-link-btn:hover {
-  color: #2b1207;
+.qv-back-btn:hover {
+  color: #3b190c;
 }
 
-/* ================= CHECKOUT STEP 2 ================= */
+.qv-checkout-title {
+  font-family: var(--display, Georgia, serif);
+  font-size: 26px;
+  color: #3b190c;
+  margin: 0 0 16px;
+}
+
 .qv-checkout-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 28px;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 24px;
   align-items: start;
 }
-
 @media (max-width: 760px) {
   .qv-checkout-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
   }
 }
 
-.qv-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.qv-field-label {
+.qv-section-label {
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #6d4629;
+  letter-spacing: 1.4px;
+  color: #8c4c2b;
   text-transform: uppercase;
+  margin: 0 0 10px;
 }
 
-.qv-input-text {
+.qv-input {
   width: 100%;
-  height: 42px;
+  padding: 10px 14px;
   background: #fff;
   border: 1px solid #cfae8b;
   border-radius: 6px;
-  padding: 0 12px;
   font-size: 13px;
   color: #2b1207;
   font-family: inherit;
+  margin-bottom: 10px;
+  box-sizing: border-box;
 }
-.qv-input-text:focus {
+.qv-input:focus {
   outline: none;
-  border-color: #79512d;
-  box-shadow: 0 0 0 2px rgba(121, 81, 45, 0.2);
+  border-color: #8c4c2b;
+  box-shadow: 0 0 0 2px rgba(140, 76, 43, 0.18);
+}
+.qv-textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.qv-order-summary-line {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3b190c;
+  background: #ebd8c0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-top: 6px;
 }
 
 .qv-payment-card {
   background: #f1e2cd;
   border: 1px solid #cba37a;
   border-radius: 10px;
-  padding: 20px;
+  padding: 18px;
   text-align: center;
 }
 
 .qv-qr-wrapper {
   background: #fff;
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   display: inline-block;
-  margin: 10px auto;
+  margin: 8px auto;
   border: 1px solid #d5b999;
   box-shadow: 0 6px 16px rgba(0,0,0,0.06);
 }
-
-.qv-qr-image {
-  width: 170px;
-  height: 170px;
+.qv-qr-img {
+  width: 160px;
+  height: 160px;
   display: block;
 }
 
-.qv-upi-copy-row {
+.qv-upi-id-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 6px;
+  margin: 8px 0;
   font-size: 12px;
   color: #55341c;
 }
-
-.qv-copy-pill {
-  background: #2b1207;
-  color: #fff;
+.qv-copy-btn {
+  background: #3b190c;
+  color: #fbf3e2;
   border: none;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 3px 8px;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.qv-utr-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #8c4c2b;
+  letter-spacing: 0.5px;
+  margin: 12px 0 6px;
+  text-align: left;
+}
+
+.qv-upload-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ebd8c0;
+  border: 1px dashed #ad8561;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #55341c;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: background 0.2s;
+}
+.qv-upload-label:hover {
+  background: #e2cbaf;
+}
+
+.qv-screenshot-preview {
+  max-width: 100%;
+  max-height: 120px;
+  border-radius: 6px;
+  margin: 6px auto;
+  display: block;
+  border: 1px solid #cba37a;
+}
+.qv-screenshot-name {
+  font-size: 11px;
+  color: #4a210e;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.qv-confirm-btn {
+  width: 100%;
+  height: 44px;
+  background: #2b1207;
+  color: #fcf4e8;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.2s;
+}
+.qv-confirm-btn:hover {
+  background: #4a210f;
+  transform: translateY(-1px);
 }
 
 .qv-whatsapp-trouble-btn {
@@ -2540,59 +2741,112 @@ body.intro-active { overflow:hidden !important; }
   justify-content: center;
   gap: 8px;
   width: 100%;
-  height: 42px;
+  height: 38px;
   background: #25D366;
   color: #fff;
+  border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  text-decoration: none;
-  margin-top: 10px;
+  cursor: pointer;
+  margin-top: 8px;
   transition: opacity 0.2s ease;
 }
 .qv-whatsapp-trouble-btn:hover {
-  opacity: 0.92;
+  opacity: 0.9;
 }
 
-/* ================= SUCCESS STEP 3 ================= */
+/* ================= STEP 3: SUCCESS ================= */
 .qv-success-card {
   text-align: center;
-  padding: 36px 20px;
+  padding: 30px 20px;
 }
-
-.qv-success-heart {
-  font-size: 48px;
-  color: #a86b3b;
-  margin-bottom: 12px;
+.qv-success-icon {
+  font-size: 46px;
+  margin-bottom: 8px;
 }
-
 .qv-success-title {
   font-family: var(--display, Georgia, serif);
-  font-size: 34px;
+  font-size: 32px;
   color: #2b1207;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 }
-
-.qv-success-desc {
-  font-size: 14px;
-  line-height: 1.7;
-  color: #61402a;
-  max-width: 480px;
-  margin: 0 auto 24px;
-}
-
-.qv-btn-done {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: #2b1207;
-  color: #fff;
-  border-radius: 6px;
+.qv-success-msg {
   font-size: 13px;
+  color: #5d3f2b;
+  margin-bottom: 10px;
+}
+.qv-order-id-line {
+  font-size: 15px;
+  font-weight: 800;
+  color: #8c4c2b;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.qv-receipt-note {
+  font-size: 12px;
+  color: #6b3a22;
+  font-style: italic;
+  max-width: 480px;
+  margin: 0 auto 16px;
+  line-height: 1.5;
+}
+.qv-download-receipt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto 10px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #3b1a0a 0%, #5c2d0e 100%);
+  color: #f5e6d0;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.qv-download-receipt-btn:hover {
+  opacity: 0.88;
+}
+
+.qv-whatsapp-chat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto 10px;
+  padding: 12px 20px;
+  background: #25D366;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.qv-whatsapp-chat-btn:hover {
+  opacity: 0.9;
+}
+
+.qv-done-btn {
+  background: none;
+  border: 1px solid #c49f78;
+  color: #5c351b;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border: none;
+  margin-top: 8px;
+}
+.qv-done-btn:hover {
+  background: #ead8c0;
 }
 
 

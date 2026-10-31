@@ -24,7 +24,7 @@ export function initializeOiAI() {
   const freeDeliveryAt = 799;
   const fallbackPhoto = OIAI_IMAGES.dark;
 
-  const PRODUCTS = [
+  let PRODUCTS = [
     { id: 1, name: 'Secret Crush', price: 349, weight: 'Box of 6 pieces (120g)', personality: 'Shy, romantic, full of surprises', tagline: 'A little nut. A lot of feelings.', ingredients: 'Dark chocolate shell with a roasted almond in the centre', filter: 'Filled Centres', kind: 'DARK CHOCOLATE', badge: 'A NUTTY LITTLE SECRET', desc: 'A dark chocolate shell with a roasted almond waiting in the middle.', notes: 'Dark chocolate · almond centre', image: OIAI_IMAGES.milkPralines, tint: '#a56842' },
     { id: 2, name: 'Bad Habit', price: 349, weight: 'Box of 6 pieces (120g)', personality: 'Bold, addictive, impossible to resist', tagline: 'You said just one. We both know.', ingredients: 'Dark chocolate with a cocoa-coated cashew in the centre', filter: 'Filled Centres', kind: 'DARK CHOCOLATE', badge: 'COCOA MEETS CRUNCH', desc: 'Deep chocolate wrapped around a cocoa cashew centre.', notes: 'Dark chocolate · cocoa cashew centre', image: OIAI_IMAGES.cocoaShards, tint: '#5a2918' },
     { id: 3, name: 'Sweet Surrender', price: 379, weight: 'Box of 6 pieces (125g)', personality: 'Soft-hearted, indulgent, dangerously smooth', tagline: 'Resistance was never an option.', ingredients: 'Dark chocolate shell with a Nutella centre', filter: 'Filled Centres', kind: 'DARK CHOCOLATE', badge: 'THE SOFT MIDDLE', desc: 'A dark chocolate outside with a Nutella-soft middle.', notes: 'Dark chocolate · Nutella centre', image: OIAI_IMAGES.ganacheTruffles, tint: '#6c351f' },
@@ -178,109 +178,160 @@ export function initializeOiAI() {
   let qvActiveProduct = null;
   let qvQty = 1;
 
-  function openQuickView(id) {
-    const p = PRODUCTS.find(product => product.id === Number(id));
+  function openQuickView(id: any) {
+    const p = PRODUCTS.find(product => String(product.id) === String(id) || product.id === Number(id));
     if (!p) return;
     state.activeProduct = p.id;
     qvActiveProduct = p;
     qvQty = 1;
     renderProductDetail(p);
-    $('#quick-view-modal').classList.add('open');
-    $('#modal-backdrop').classList.add('open');
-    $('#quick-view-modal').setAttribute('aria-hidden', 'false');
+    const modal = $('#quick-view-modal');
+    const backdrop = $('#modal-backdrop');
+    if (modal) {
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    if (backdrop) {
+      backdrop.classList.add('open');
+    }
     document.body.classList.add('no-scroll');
-    $('#modal-close').focus();
+    const closeBtn = $('#modal-close');
+    if (closeBtn) closeBtn.focus();
   }
 
-  function renderProductDetail(p) {
+  function renderProductDetail(p: any) {
     const upiId = '8125107227@upi';
     const whatsappNum = '918125107227';
+    let screenshotBase64 = '';
+
     $('#quick-view-content').innerHTML = `
-      <!-- STEP 1: Product Detail -->
-      <div class="qv-step" id="qv-step-1">
-        <div class="qv-layout-grid">
-          <div class="qv-left-column">
-            <img class="qv-main-photo" src="${p.image}" alt="${escapeHTML(p.name)}"
-              onerror="this.onerror=null;this.src='${fallbackPhoto}'" />
-          </div>
-          <div class="qv-right-column">
-            <div class="qv-badge-pill">${escapeHTML(p.badge)}</div>
-            <div class="qv-kind-label">${escapeHTML(p.kind)}</div>
-            <h2 class="qv-product-name">${escapeHTML(p.name)}</h2>
-            <p class="qv-tagline-text">&ldquo;${escapeHTML(p.tagline)}&rdquo;</p>
-            <div class="qv-price-highlight-card">
-              <span class="qv-price-bold">${money(p.price)}</span>
-              <span class="qv-price-unit">${escapeHTML(p.weight)}</span>
-            </div>
-            <p class="qv-desc-text">${escapeHTML(p.desc)} Every batch is made with care, packed by hand, and best enjoyed slowly (or immediately; no judgement here).</p>
-            <div class="qv-detail-row"><span class="qv-detail-label">Ingredients</span><span class="qv-detail-val">${escapeHTML(p.ingredients)}</span></div>
-            <div class="qv-detail-row"><span class="qv-detail-label">Tasting notes</span><span class="qv-detail-val">${escapeHTML(p.notes)}</span></div>
-            <div class="qv-quantity-bar">
-              <span class="qv-qty-label">Quantity</span>
-              <div class="qv-qty-controls">
-                <button class="qv-qty-btn" id="qv-qty-minus" type="button" aria-label="Decrease quantity">&minus;</button>
-                <span class="qv-qty-display" id="qv-qty-display">1</span>
-                <button class="qv-qty-btn" id="qv-qty-plus" type="button" aria-label="Increase quantity">+</button>
+      <div class="qv-scroll-wrap">
+        <!-- STEP 1: Product Detail -->
+        <div class="qv-step is-active" id="qv-step-1">
+          <div class="qv-layout-grid">
+            <div class="qv-left-column">
+              <div class="qv-photo-stage">
+                <span class="qv-photo-tape" aria-hidden="true"></span>
+                <div class="qv-photo-window">
+                  <img class="qv-main-photo" src="${p.image}" alt="${escapeHTML(p.name)}"
+                    onerror="this.onerror=null;this.src='${fallbackPhoto}'" />
+                </div>
+                <div class="qv-photo-caption">
+                  <div><small>FROM OUR CHOCOLATE KITCHEN</small><br><strong>One more bite?</strong></div>
+                  <em>go on, then ♥</em>
+                </div>
               </div>
-              <span class="qv-qty-total" id="qv-qty-total">${money(p.price)}</span>
+              <div class="qv-gallery-stamp" aria-hidden="true">
+                <b>OiAI</b>
+                <small>MADE WITH A LITTLE LOVE</small>
+              </div>
             </div>
-            <button class="qv-order-primary-btn" id="qv-get-order-btn" type="button">Get Order &rarr;</button>
-            <div class="qv-feedback-link-row">
-              <button class="qv-text-link" type="button" data-feedback-open="${escapeHTML(p.kind)}" data-product-id="${p.id}" data-product-name="${escapeHTML(p.name)}">Leave a taste note &#x2665;</button>
+
+            <div class="qv-right-column">
+              <div class="qv-eyebrow">${escapeHTML(p.category || 'THE CHOCOLATE SHELF')}</div>
+              <h2 class="qv-product-name">${escapeHTML(p.name)}</h2>
+              ${p.tagline ? `<p class="qv-tagline-quote">&ldquo;${escapeHTML(p.tagline)}&rdquo;</p>` : ''}
+
+              <div class="qv-micro-tags">
+                <span class="qv-micro-tag">${escapeHTML(p.kind || 'HOMEMADE')}</span>
+                <span class="qv-micro-tag">${escapeHTML(p.badge || 'SMALL BATCH')}</span>
+                <span class="qv-micro-tag">FRESH BATCH</span>
+              </div>
+
+              <div class="qv-price-highlight-card">
+                <div class="qv-price-bold">${money(p.price)}</div>
+                <div class="qv-price-unit">${escapeHTML(p.weight || 'Box of 6 pieces (120g)')}</div>
+              </div>
+
+              <p class="qv-description-body">${escapeHTML(p.desc || p.description || '')}</p>
+
+              <div class="qv-detail-list">
+                ${p.ingredients ? `<div class="qv-detail-item"><span class="qv-detail-label">What's inside</span><span class="qv-detail-val">${escapeHTML(p.ingredients)}</span></div>` : ''}
+                ${p.personality ? `<div class="qv-detail-item"><span class="qv-detail-label">Personality</span><span class="qv-detail-val">${escapeHTML(p.personality)}</span></div>` : ''}
+                ${p.notes ? `<div class="qv-detail-item"><span class="qv-detail-label">Tasting notes</span><span class="qv-detail-val">${escapeHTML(p.notes)}</span></div>` : ''}
+                <div class="qv-detail-item"><span class="qv-detail-label">From</span><span class="qv-detail-val">OiAI · Hyderabad, India</span></div>
+              </div>
+
+              <div class="qv-quantity-bar">
+                <span class="qv-qty-label">Quantity</span>
+                <div class="qv-qty-controls">
+                  <button class="qv-qty-btn" id="qv-qty-minus" type="button" aria-label="Decrease quantity">&minus;</button>
+                  <span class="qv-qty-display" id="qv-qty-display">1</span>
+                  <button class="qv-qty-btn" id="qv-qty-plus" type="button" aria-label="Increase quantity">+</button>
+                </div>
+                <span class="qv-qty-total" id="qv-qty-total">${money(p.price)}</span>
+              </div>
+
+              <button class="qv-order-primary-btn" id="qv-get-order-btn" type="button">
+                ADD A LITTLE BITE (Press this to order) ↗
+              </button>
+
+              <div class="qv-feedback-link-row">
+                <button class="qv-text-link" type="button" data-feedback-open="${escapeHTML(p.kind || 'Chocolate')}" data-product-id="${p.id}" data-product-name="${escapeHTML(p.name)}">
+                  Leave a taste note &#x2665;
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- STEP 2: Customer Details + UPI Payment -->
-      <div class="qv-step" id="qv-step-2" hidden>
-        <button class="qv-back-btn" id="qv-back-to-detail" type="button">&larr; Back</button>
-        <h3 class="qv-checkout-title">Complete Your Order</h3>
-        <div class="qv-checkout-grid">
-          <div class="qv-customer-form-wrap">
-            <p class="qv-section-label">YOUR DETAILS</p>
-            <input class="qv-input" id="qv-cust-name" type="text" placeholder="Full name" required autocomplete="name" />
-            <input class="qv-input" id="qv-cust-phone" type="tel" placeholder="Phone number" required autocomplete="tel" />
-            <input class="qv-input" id="qv-cust-email" type="email" placeholder="Email (optional)" autocomplete="email" />
-            <textarea class="qv-input qv-textarea" id="qv-cust-address" placeholder="Delivery address" rows="3" required></textarea>
-            <p class="qv-order-summary-line" id="qv-order-summary"></p>
-          </div>
-          <div class="qv-payment-card">
-            <p class="qv-section-label">PAY VIA UPI</p>
-            <div class="qv-qr-wrapper">
-              <img class="qv-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?data=upi%3A%2F%2Fpay%3Fpa%3D${encodeURIComponent(upiId)}%26pn%3DOiAI%26am%3D${p.price}%26cu%3DINR&size=180x180" alt="UPI QR Code" id="qv-qr-img" />
+        <!-- STEP 2: Customer Details + UPI Payment -->
+        <div class="qv-step" id="qv-step-2" hidden>
+          <button class="qv-back-btn" id="qv-back-to-detail" type="button">&larr; Back to chocolate details</button>
+          <h3 class="qv-checkout-title">Complete Your Chocolate Order</h3>
+
+          <div class="qv-checkout-grid">
+            <div class="qv-customer-form-wrap">
+              <p class="qv-section-label">1. DELIVERY DETAILS</p>
+              <input class="qv-input" id="qv-cust-name" type="text" placeholder="Full name *" required autocomplete="name" />
+              <input class="qv-input" id="qv-cust-phone" type="tel" placeholder="Phone number (WhatsApp) *" required autocomplete="tel" />
+              <input class="qv-input" id="qv-cust-email" type="email" placeholder="Email (for order confirmation receipt)" autocomplete="email" />
+              <textarea class="qv-input qv-textarea" id="qv-cust-address" placeholder="Full delivery address with pincode *" rows="3" required></textarea>
+              <p class="qv-order-summary-line" id="qv-order-summary"></p>
             </div>
-            <p class="qv-upi-id-row">UPI ID: <strong id="qv-upi-id-text">${upiId}</strong> <button class="qv-copy-btn" id="qv-copy-upi" type="button" title="Copy UPI ID">Copy</button></p>
-            <p class="qv-utr-label">Enter the UTR / UPI Transaction ID.</p>
-            <input class="qv-input" id="qv-utr" type="text" placeholder="Enter the UTR / UPI Transaction ID." />
-            <label class="qv-upload-label" for="qv-screenshot">
-              <span>&#x1F4CE; Attach payment screenshot</span>
-              <input type="file" id="qv-screenshot" accept="image/*" style="display:none" />
-            </label>
-            <p class="qv-screenshot-name" id="qv-screenshot-name" hidden></p>
-            <button class="qv-confirm-btn" id="qv-confirm-order" type="button">Confirm Order &#x2713;</button>
-            <button class="qv-whatsapp-trouble-btn" id="qv-trouble-btn" type="button">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.549 4.116 1.513 5.849L0 24l6.363-1.487A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.947 0-3.775-.5-5.373-1.373L2 22l1.394-4.487A9.967 9.967 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"></path></svg>
-              Trouble paying? Chat on WhatsApp
-            </button>
+
+            <div class="qv-payment-card">
+              <p class="qv-section-label">2. SCAN &amp; PAY VIA UPI</p>
+              <div class="qv-qr-wrapper">
+                <img class="qv-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?data=upi%3A%2F%2Fpay%3Fpa%3D${encodeURIComponent(upiId)}%26pn%3DOiAI%26am%3D${p.price}%26cu%3DINR&size=180x180" alt="UPI QR Code" id="qv-qr-img" />
+              </div>
+              <p class="qv-upi-id-row">UPI ID: <strong id="qv-upi-id-text">${upiId}</strong> <button class="qv-copy-btn" id="qv-copy-upi" type="button" title="Copy UPI ID">Copy</button></p>
+
+              <p class="qv-utr-label">Enter the UTR / UPI Transaction ID.</p>
+              <input class="qv-input" id="qv-utr" type="text" placeholder="Enter the UTR / UPI Transaction ID." />
+
+              <label class="qv-upload-label" for="qv-screenshot">
+                <span>&#x1F4CE; Attach Payment Screenshot</span>
+                <input type="file" id="qv-screenshot" accept="image/*" style="display:none" />
+              </label>
+              <img id="qv-screenshot-preview" class="qv-screenshot-preview" style="display:none;" alt="Payment Proof" />
+              <p class="qv-screenshot-name" id="qv-screenshot-name" hidden></p>
+
+              <button class="qv-confirm-btn" id="qv-confirm-order" type="button">Confirm Order &#x2713;</button>
+
+              <button class="qv-whatsapp-trouble-btn" id="qv-trouble-btn" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.549 4.116 1.513 5.849L0 24l6.363-1.487A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.947 0-3.775-.5-5.373-1.373L2 22l1.394-4.487A9.967 9.967 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"></path></svg>
+                Trouble paying? Chat on WhatsApp
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- STEP 3: Success -->
-      <div class="qv-step" id="qv-step-3" hidden>
-        <div class="qv-success-card">
-          <div class="qv-success-icon">&#x1F36B;</div>
-          <h2 class="qv-success-title">Order Received!</h2>
-          <p class="qv-success-msg" id="qv-success-msg">Thank you! We will confirm your order shortly.</p>
-          <p class="qv-order-id-line" id="qv-order-id-line"></p>
-          <p class="qv-receipt-note">A copy of all the details and payment verification will be sent to your email. Thank you!</p>
-          <button class="qv-download-receipt-btn" id="qv-download-receipt" type="button">&#x1F4E5; Download Receipt</button>
-          <a class="qv-whatsapp-chat-btn" id="qv-wa-btn" href="#" target="_blank" rel="noopener noreferrer">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.549 4.116 1.513 5.849L0 24l6.363-1.487A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.947 0-3.775-.5-5.373-1.373L2 22l1.394-4.487A9.967 9.967 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"></path></svg>
-            Send order details on WhatsApp
-          </a>
-          <button class="qv-done-btn" id="qv-done-btn" type="button">Continue Shopping</button>
+        <!-- STEP 3: Success -->
+        <div class="qv-step" id="qv-step-3" hidden>
+          <div class="qv-success-card">
+            <div class="qv-success-icon">&#x1F36B;</div>
+            <h2 class="qv-success-title">Order Received!</h2>
+            <p class="qv-success-msg" id="qv-success-msg">Thank you! We will confirm your order shortly.</p>
+            <p class="qv-order-id-line" id="qv-order-id-line"></p>
+            <p class="qv-receipt-note">A copy of all the details and payment verification will be sent to your email. Thank you!</p>
+            <button class="qv-download-receipt-btn" id="qv-download-receipt" type="button">&#x1F4E5; Download Receipt</button>
+            <a class="qv-whatsapp-chat-btn" id="qv-wa-btn" href="#" target="_blank" rel="noopener noreferrer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"></path><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.549 4.116 1.513 5.849L0 24l6.363-1.487A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.947 0-3.775-.5-5.373-1.373L2 22l1.394-4.487A9.967 9.967 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"></path></svg>
+              Send order details on WhatsApp
+            </a>
+            <button class="qv-done-btn" id="qv-done-btn" type="button">Continue Shopping</button>
+          </div>
         </div>
       </div>
     `;
@@ -299,62 +350,87 @@ export function initializeOiAI() {
     if (minusBtn) minusBtn.addEventListener('click', () => { if (qvQty > 1) { qvQty--; updateQty(); } });
     if (plusBtn) plusBtn.addEventListener('click', () => { if (qvQty < 20) { qvQty++; updateQty(); } });
 
-    // Get Order > Step 2
+    // Switch from Step 1 to Step 2
     const getOrderBtn = $('#qv-get-order-btn');
     if (getOrderBtn) getOrderBtn.addEventListener('click', () => {
       const summary = $('#qv-order-summary');
       if (summary) summary.textContent = qvQty + ' x ' + p.name + ' = ' + money(p.price * qvQty);
       const qrImgEl = $('#qv-qr-img');
-      if (qrImgEl) qrImgEl.src = 'https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent('upi://pay?pa=' + upiId + '&pn=OiAI&am=' + (p.price * qvQty) + '&cu=INR') + '&size=180x180';
-      $('#qv-step-1').hidden = true;
-      $('#qv-step-2').hidden = false;
+      if (qrImgEl) {
+        qrImgEl.src = 'https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent('upi://pay?pa=' + upiId + '&pn=OiAI&am=' + (p.price * qvQty) + '&cu=INR') + '&size=180x180';
+      }
+      const s1 = $('#qv-step-1');
+      const s2 = $('#qv-step-2');
+      if (s1) { s1.classList.remove('is-active'); s1.hidden = true; }
+      if (s2) { s2.classList.add('is-active'); s2.hidden = false; }
     });
 
-    // Back to detail
+    // Back from Step 2 to Step 1
     const backBtn = $('#qv-back-to-detail');
     if (backBtn) backBtn.addEventListener('click', () => {
-      $('#qv-step-2').hidden = true;
-      $('#qv-step-1').hidden = false;
+      const s1 = $('#qv-step-1');
+      const s2 = $('#qv-step-2');
+      if (s2) { s2.classList.remove('is-active'); s2.hidden = true; }
+      if (s1) { s1.classList.add('is-active'); s1.hidden = false; }
     });
 
     // Copy UPI ID
     const copyUpiBtn = $('#qv-copy-upi');
     if (copyUpiBtn) copyUpiBtn.addEventListener('click', () => {
-      navigator.clipboard && navigator.clipboard.writeText(upiId).catch(function() {});
+      if (navigator.clipboard) navigator.clipboard.writeText(upiId).catch(function() {});
       copyUpiBtn.textContent = 'Copied!';
       window.setTimeout(function() { copyUpiBtn.textContent = 'Copy'; }, 2000);
     });
 
-    // Screenshot file picker
-    const screenshotInput = $('#qv-screenshot');
+    // Screenshot file reader
+    const screenshotInput = $('#qv-screenshot') as HTMLInputElement | null;
     const screenshotName = $('#qv-screenshot-name');
+    const screenshotPreview = $('#qv-screenshot-preview') as HTMLImageElement | null;
     const uploadLabel = $('#quick-view-content .qv-upload-label');
-    if (uploadLabel && screenshotInput) uploadLabel.addEventListener('click', function() { screenshotInput.click(); });
-    if (screenshotInput) screenshotInput.addEventListener('change', function() {
-      const file = screenshotInput.files && screenshotInput.files[0];
-      if (file && screenshotName) { screenshotName.textContent = 'Attached: ' + file.name; screenshotName.hidden = false; }
-    });
+    if (uploadLabel && screenshotInput) {
+      uploadLabel.addEventListener('click', function() { screenshotInput.click(); });
+    }
+    if (screenshotInput) {
+      screenshotInput.addEventListener('change', function() {
+        const file = screenshotInput.files && screenshotInput.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            screenshotBase64 = String(e.target?.result || '');
+            if (screenshotPreview) {
+              screenshotPreview.src = screenshotBase64;
+              screenshotPreview.style.display = 'block';
+            }
+            if (screenshotName) {
+              screenshotName.textContent = 'Attached: ' + file.name;
+              screenshotName.hidden = false;
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
 
     // Trouble paying WhatsApp
     const troubleBtn = $('#qv-trouble-btn');
     if (troubleBtn) troubleBtn.addEventListener('click', function() {
-      const cName = ($('#qv-cust-name') && $('#qv-cust-name').value || '').trim();
+      const cName = ($('#qv-cust-name') && ($('#qv-cust-name') as HTMLInputElement).value || '').trim();
       const msg = encodeURIComponent('Hi OiAI! I am having trouble paying for my order.\nItem: ' + p.name + ' x ' + qvQty + '\nTotal: ' + money(p.price * qvQty) + (cName ? '\nName: ' + cName : ''));
       window.open('https://wa.me/' + whatsappNum + '?text=' + msg, '_blank', 'noopener');
     });
 
     // Confirm Order
-    const confirmBtn = $('#qv-confirm-order');
+    const confirmBtn = $('#qv-confirm-order') as HTMLButtonElement | null;
     if (confirmBtn) confirmBtn.addEventListener('click', async function() {
-      const custName = ($('#qv-cust-name') && $('#qv-cust-name').value || '').trim();
-      const custPhone = ($('#qv-cust-phone') && $('#qv-cust-phone').value || '').trim();
-      const custEmail = ($('#qv-cust-email') && $('#qv-cust-email').value || '').trim();
-      const custAddress = ($('#qv-cust-address') && $('#qv-cust-address').value || '').trim();
-      const utr = ($('#qv-utr') && $('#qv-utr').value || '').trim();
+      const custName = ($('#qv-cust-name') && ($('#qv-cust-name') as HTMLInputElement).value || '').trim();
+      const custPhone = ($('#qv-cust-phone') && ($('#qv-cust-phone') as HTMLInputElement).value || '').trim();
+      const custEmail = ($('#qv-cust-email') && ($('#qv-cust-email') as HTMLInputElement).value || '').trim();
+      const custAddress = ($('#qv-cust-address') && ($('#qv-cust-address') as HTMLTextAreaElement).value || '').trim();
+      const utr = ($('#qv-utr') && ($('#qv-utr') as HTMLInputElement).value || '').trim();
 
-      if (!custName) { if ($('#qv-cust-name')) $('#qv-cust-name').focus(); showToast('Please enter your name', true); return; }
-      if (!custPhone) { if ($('#qv-cust-phone')) $('#qv-cust-phone').focus(); showToast('Please enter your phone number', true); return; }
-      if (!custAddress) { if ($('#qv-cust-address')) $('#qv-cust-address').focus(); showToast('Please enter your delivery address', true); return; }
+      if (!custName) { if ($('#qv-cust-name')) ($('#qv-cust-name') as HTMLInputElement).focus(); showToast('Please enter your name', true); return; }
+      if (!custPhone) { if ($('#qv-cust-phone')) ($('#qv-cust-phone') as HTMLInputElement).focus(); showToast('Please enter your phone number', true); return; }
+      if (!custAddress) { if ($('#qv-cust-address')) ($('#qv-cust-address') as HTMLTextAreaElement).focus(); showToast('Please enter your delivery address', true); return; }
 
       confirmBtn.disabled = true;
       confirmBtn.textContent = 'Placing order...';
@@ -363,15 +439,29 @@ export function initializeOiAI() {
         const res = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: String(p.id), productName: p.name, quantity: qvQty, totalPrice: p.price * qvQty, customerName: custName, customerPhone: custPhone, customerEmail: custEmail, customerAddress: custAddress, utrId: utr, paymentMethod: 'upi' })
+          body: JSON.stringify({
+            productId: String(p.id),
+            productName: p.name,
+            quantity: qvQty,
+            totalPrice: p.price * qvQty,
+            customerName: custName,
+            customerPhone: custPhone,
+            customerEmail: custEmail,
+            customerAddress: custAddress,
+            utrId: utr,
+            screenshotUrl: screenshotBase64 || null,
+            paymentMethod: 'upi'
+          })
         });
         const result = await res.json();
         const orderId = result.orderId || result.id || '';
 
         const waMsg = encodeURIComponent('Hi OiAI! I have placed an order!\n\nOrder: ' + p.name + ' x ' + qvQty + '\nTotal: ' + money(p.price * qvQty) + (utr ? '\nUTR/Transaction ID: ' + utr : '') + '\nName: ' + custName + '\nPhone: ' + custPhone + '\nAddress: ' + custAddress + (orderId ? '\nOrder ID: ' + orderId : ''));
 
-        $('#qv-step-2').hidden = true;
-        $('#qv-step-3').hidden = false;
+        const s2 = $('#qv-step-2');
+        const s3 = $('#qv-step-3');
+        if (s2) { s2.classList.remove('is-active'); s2.hidden = true; }
+        if (s3) { s3.classList.add('is-active'); s3.hidden = false; }
 
         const successMsg = $('#qv-success-msg');
         if (successMsg) successMsg.textContent = 'Thank you, ' + custName + '! Your order for ' + p.name + ' x ' + qvQty + ' has been received. We will confirm via WhatsApp shortly.';
@@ -379,7 +469,7 @@ export function initializeOiAI() {
         const orderIdLine = $('#qv-order-id-line');
         if (orderIdLine && orderId) orderIdLine.textContent = 'Order ID: ' + orderId;
 
-        const waBtn = $('#qv-wa-btn');
+        const waBtn = $('#qv-wa-btn') as HTMLAnchorElement | null;
         if (waBtn) waBtn.href = 'https://wa.me/' + whatsappNum + '?text=' + waMsg;
 
         // Wire receipt download
@@ -422,9 +512,15 @@ export function initializeOiAI() {
   }
 
   function closeQuickView() {
-    $('#quick-view-modal').classList.remove('open');
-    $('#modal-backdrop').classList.remove('open');
-    $('#quick-view-modal').setAttribute('aria-hidden', 'true');
+    const modal = $('#quick-view-modal');
+    const backdrop = $('#modal-backdrop');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    if (backdrop) {
+      backdrop.classList.remove('open');
+    }
     document.body.classList.remove('no-scroll');
     state.activeProduct = null;
     qvActiveProduct = null;
@@ -936,6 +1032,36 @@ export function initializeOiAI() {
   $('#year').textContent = new Date().getFullYear();
   renderProducts();
   renderCart();
+
+  // Load live products from Supabase database
+  if (typeof fetch === 'function') {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data?.products) && data.products.length > 0) {
+          PRODUCTS = data.products.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price) || 349,
+            weight: p.weight || 'Box of 6 pieces (120g)',
+            personality: p.personality || '',
+            tagline: p.tagline || '',
+            ingredients: p.ingredients || '',
+            filter: p.category || 'Filled Centres',
+            category: p.category || 'Filled Centres',
+            kind: p.kind || 'DARK CHOCOLATE',
+            badge: p.badge || 'SMALL BATCH',
+            desc: p.description || '',
+            description: p.description || '',
+            notes: p.notes || '',
+            image: p.image || fallbackPhoto,
+            tint: '#a56842'
+          }));
+          renderProducts();
+        }
+      })
+      .catch(() => {});
+  }
 
   /* Analogue album effects: uses the existing nine chocolate photos and respects reduced-motion. */
   (function initOiAIPhotoAlbum() {

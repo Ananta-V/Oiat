@@ -14,19 +14,16 @@ import {
   Search,
   Trash2,
   MessageSquare,
-  ExternalLink,
   Check,
-  Copy,
-  AlertTriangle,
-  Database,
   Package,
   ShoppingBag,
   Plus,
   Edit,
   X,
   Phone,
-  MapPin,
-  Clock,
+  Tag,
+  Upload,
+  Layers,
 } from "lucide-react";
 
 type ProductItem = {
@@ -71,127 +68,21 @@ type FeedbackItem = {
   id: string;
   name: string;
   email: string;
-  context: string;
+  context?: string | null;
   rating: number;
-  feelings: string[];
+  feelings?: string[] | null;
   message: string;
   product_id?: string | null;
   product_name?: string | null;
-  page_url?: string | null;
-  source: string;
-  created_at: string;
-};
-
-type SubscriberItem = {
-  id: string;
-  email: string;
-  source: string;
   created_at: string;
 };
 
 type Stats = {
+  totalProducts: number;
+  totalOrders: number;
   totalFeedback: number;
-  averageRating: number;
-  subscribersCount: number;
-  ordersCount: number;
-  totalRevenue: number;
-  productsCount: number;
-  ratingDistribution: Record<number, number>;
-  feelingsBreakdown: Record<string, number>;
+  averageRating: string;
 };
-
-const SQL_SCHEMA = `-- ============================================================
--- OiAI Homemade Chocolates - Full Database Schema
--- Run this in Supabase SQL Editor: https://supabase.com/dashboard/project/ktennsxpuvojtyhbmnxc/sql
--- ============================================================
-
--- 1. PRODUCTS TABLE
-create table if not exists public.products (
-  id text primary key,
-  name text not null,
-  slug text not null,
-  price integer not null default 349,
-  category text not null,
-  kind text default 'DARK CHOCOLATE',
-  tagline text,
-  personality text,
-  description text,
-  ingredients text,
-  notes text,
-  badge text default 'SMALL BATCH',
-  image text not null,
-  weight text default 'Box of 6 pieces (120g)',
-  rating numeric(2,1) default 4.9,
-  review_count integer default 24,
-  is_active boolean default true,
-  created_at timestamptz not null default timezone('utc'::text, now()),
-  updated_at timestamptz not null default timezone('utc'::text, now())
-);
-
--- 2. FEEDBACK TABLE
-create table if not exists public.feedback (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  email text not null,
-  context text default 'Your OiAI story',
-  rating integer not null check (rating >= 1 and rating <= 5),
-  feelings text[] default '{}',
-  message text not null,
-  product_id text,
-  product_name text,
-  page_url text,
-  source text default 'oiai-catalogue',
-  created_at timestamptz not null default timezone('utc'::text, now())
-);
-
--- 3. ORDERS TABLE (UPI & WhatsApp)
-create table if not exists public.orders (
-  id text primary key,
-  customer_name text not null,
-  customer_phone text not null,
-  customer_email text,
-  delivery_address text not null,
-  city text default 'Hyderabad',
-  pincode text,
-  order_notes text,
-  items jsonb not null default '[]',
-  total_amount integer not null,
-  payment_method text default 'UPI',
-  transaction_id text,
-  screenshot_url text,
-  status text not null default 'pending_verification',
-  created_at timestamptz not null default timezone('utc'::text, now())
-);
-
--- 4. SUBSCRIBERS TABLE
-create table if not exists public.subscribers (
-  id uuid primary key default gen_random_uuid(),
-  email text not null unique,
-  source text default 'oiai-newsletter',
-  created_at timestamptz not null default timezone('utc'::text, now())
-);
-
--- 5. ROW LEVEL SECURITY (RLS)
-alter table public.products enable row level security;
-alter table public.feedback enable row level security;
-alter table public.orders enable row level security;
-alter table public.subscribers enable row level security;
-
--- Policies for products
-create policy "Allow public read on products" on public.products for select to anon, authenticated using (is_active = true);
-create policy "Allow service role all on products" on public.products for all to service_role using (true) with check (true);
-
--- Policies for feedback
-create policy "Allow public insert on feedback" on public.feedback for insert to anon, authenticated with check (true);
-create policy "Allow service role all on feedback" on public.feedback for all to service_role using (true) with check (true);
-
--- Policies for orders
-create policy "Allow public insert on orders" on public.orders for insert to anon, authenticated with check (true);
-create policy "Allow service role all on orders" on public.orders for all to service_role using (true) with check (true);
-
--- Policies for subscribers
-create policy "Allow public insert on subscribers" on public.subscribers for insert to anon, authenticated with check (true);
-create policy "Allow service role all on subscribers" on public.subscribers for all to service_role using (true) with check (true);`;
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -204,13 +95,12 @@ export default function AdminPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
-  const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [tableMissing, setTableMissing] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   // Tabs & filters
-  const [activeTab, setActiveTab] = useState<"products" | "orders" | "feedback" | "subscribers" | "guide">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "feedback">("products");
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [contextFilter, setContextFilter] = useState("all");
@@ -219,10 +109,19 @@ export default function AdminPage() {
 
   // Product edit modal state
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [productModalTab, setProductModalTab] = useState<"card" | "detail">("card");
   const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [isCustomCategoryInput, setIsCustomCategoryInput] = useState(false);
 
-  // Copy feedback state
-  const [copiedSql, setCopiedSql] = useState(false);
+  // Category management state
+  const [showCategoryMgr, setShowCategoryMgr] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [renameFromCat, setRenameFromCat] = useState("");
+  const [renameToCat, setRenameToCat] = useState("");
+  const [isRenamingCat, setIsRenamingCat] = useState(false);
+
+  // Order viewing modal state
+  const [viewingOrder, setViewingOrder] = useState<OrderItem | null>(null);
 
   // Initial Auth Check
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -244,7 +143,7 @@ export default function AdminPage() {
       } else {
         setStats(data.stats);
       }
-      await Promise.all([loadProducts(), loadOrders(), loadFeedbacks(), loadSubscribers()]);
+      await Promise.all([loadProducts(), loadOrders(), loadFeedbacks()]);
     } catch (err) {
       console.error(err);
       setIsAuthenticated(false);
@@ -256,10 +155,9 @@ export default function AdminPage() {
   async function loadProducts() {
     try {
       const res = await fetch("/api/admin/products");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.tableMissing) setTableMissing(true);
-        setProducts(data.products || []);
+      const data = await res.json();
+      if (data.products) {
+        setProducts(data.products);
       }
     } catch (e) {
       console.error("Failed loading products", e);
@@ -269,10 +167,9 @@ export default function AdminPage() {
   async function loadOrders() {
     try {
       const res = await fetch("/api/admin/orders");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.tableMissing) setTableMissing(true);
-        setOrders(data.orders || []);
+      const data = await res.json();
+      if (data.orders) {
+        setOrders(data.orders);
       }
     } catch (e) {
       console.error("Failed loading orders", e);
@@ -282,26 +179,12 @@ export default function AdminPage() {
   async function loadFeedbacks() {
     try {
       const res = await fetch("/api/admin/feedback");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.tableMissing) setTableMissing(true);
-        setFeedbacks(data.feedback || []);
+      const data = await res.json();
+      if (data.feedback) {
+        setFeedbacks(data.feedback);
       }
     } catch (e) {
       console.error("Failed loading feedback", e);
-    }
-  }
-
-  async function loadSubscribers() {
-    try {
-      const res = await fetch("/api/admin/subscribers");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.tableMissing) setTableMissing(true);
-        setSubscribers(data.subscribers || []);
-      }
-    } catch (e) {
-      console.error("Failed loading subscribers", e);
     }
   }
 
@@ -317,29 +200,28 @@ export default function AdminPage() {
         body: JSON.stringify({ password: passwordInput }),
       });
       const data = await res.json();
+
       if (!res.ok) {
         setLoginError(data.error || "Incorrect admin password.");
-      } else {
-        setIsAuthenticated(true);
-        setPasswordInput("");
-        await checkAuthAndLoad();
+        setIsLoggingIn(false);
+        return;
       }
+
+      setIsAuthenticated(true);
+      setPasswordInput("");
+      await checkAuthAndLoad();
     } catch {
-      setLoginError("Could not connect to authentication server.");
+      setLoginError("Could not verify password. Please try again.");
     } finally {
       setIsLoggingIn(false);
     }
   }
 
   async function handleLogout() {
-    try {
-      await fetch("/api/admin/logout", { method: "POST" });
-    } finally {
-      setIsAuthenticated(false);
-    }
+    await fetch("/api/admin/logout", { method: "POST" });
+    setIsAuthenticated(false);
   }
 
-  // Save product changes
   async function handleSaveProduct(e: React.FormEvent) {
     e.preventDefault();
     if (!editingProduct) return;
@@ -351,33 +233,26 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingProduct),
       });
-      const data = await res.json();
-      if (res.ok) {
-        const updated = data.product || editingProduct;
-        setProducts((prev) => {
-          const index = prev.findIndex((p) => p.id === updated.id);
-          if (index >= 0) {
-            const next = [...prev];
-            next[index] = updated;
-            return next;
-          }
-          return [...prev, updated];
-        });
-        setEditingProduct(null);
-        alert("Product saved successfully!");
-      } else {
-        alert(data.error || "Could not save product.");
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to save product");
+        return;
       }
-    } catch {
-      alert("Error saving product.");
+
+      await loadProducts();
+      setEditingProduct(null);
+      setIsCustomCategoryInput(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error saving product changes");
     } finally {
       setIsSavingProduct(false);
     }
   }
 
-  // Seed default products
   async function handleSeedProducts() {
-    if (!confirm("This will populate Supabase with the 9 standard OiAI homemade chocolate items. Continue?")) return;
+    if (!confirm("This will seed standard chocolate menu items into Supabase. Continue?")) return;
     try {
       const res = await fetch("/api/admin/products", {
         method: "POST",
@@ -385,18 +260,18 @@ export default function AdminPage() {
         body: JSON.stringify({ seed: true }),
       });
       const data = await res.json();
-      if (res.ok) {
-        alert(`Successfully seeded ${data.count || 9} chocolates into Supabase!`);
+      if (data.success) {
+        alert(`Seeded ${data.count} chocolate items into Supabase.`);
         await loadProducts();
       } else {
-        alert(data.error || "Could not seed products. Check if the 'products' table exists in Supabase.");
+        alert(data.error || "Failed seeding products");
       }
-    } catch {
-      alert("Error seeding products.");
+    } catch (e) {
+      console.error(e);
+      alert("Error triggering seed");
     }
   }
 
-  // Update order status
   async function handleUpdateOrderStatus(orderId: string, newStatus: string) {
     try {
       const res = await fetch("/api/admin/orders", {
@@ -408,36 +283,17 @@ export default function AdminPage() {
         setOrders((prev) =>
           prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
         );
-      } else {
-        alert("Could not update order status.");
+        if (viewingOrder && viewingOrder.id === orderId) {
+          setViewingOrder({ ...viewingOrder, status: newStatus });
+        }
       }
-    } catch {
-      alert("Error updating order status.");
+    } catch (e) {
+      console.error("Failed to update status", e);
     }
   }
 
-  // Delete order
-  async function handleDeleteOrder(id: string) {
-    if (!confirm("Are you sure you want to delete this order record?")) return;
-    try {
-      const res = await fetch("/api/admin/orders", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok) {
-        setOrders((prev) => prev.filter((o) => o.id !== id));
-      } else {
-        alert("Could not delete order.");
-      }
-    } catch {
-      alert("Error deleting order.");
-    }
-  }
-
-  // Delete feedback
   async function handleDeleteFeedback(id: string) {
-    if (!confirm("Are you sure you want to delete this feedback note?")) return;
+    if (!confirm("Permanently delete this taste note?")) return;
     try {
       const res = await fetch("/api/admin/feedback", {
         method: "DELETE",
@@ -446,17 +302,50 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setFeedbacks((prev) => prev.filter((f) => f.id !== id));
-      } else {
-        alert("Could not delete item.");
       }
-    } catch {
-      alert("Error deleting feedback item.");
+    } catch (e) {
+      console.error("Failed deleting feedback", e);
     }
   }
 
-  function copySchema() {
-    const schemaEl = document.querySelector('.admin-code-block');
-    if (schemaEl) navigator.clipboard?.writeText(schemaEl.textContent || '').catch(() => {});
+  function handleDeviceImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file && editingProduct) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = String(event.target?.result || "");
+        setEditingProduct({ ...editingProduct, image: base64 });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function handleRenameCategory() {
+    if (!renameFromCat || !renameToCat.trim()) {
+      alert("Please select a category and enter the new name.");
+      return;
+    }
+    setIsRenamingCat(true);
+    try {
+      const matching = products.filter((p) => p.category === renameFromCat);
+      for (const prod of matching) {
+        await fetch("/api/admin/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...prod, category: renameToCat.trim() }),
+        });
+      }
+      await loadProducts();
+      setRenameFromCat("");
+      setRenameToCat("");
+      setShowCategoryMgr(false);
+      alert(`Renamed category to "${renameToCat.trim()}" across ${matching.length} products.`);
+    } catch (e) {
+      console.error("Rename failed", e);
+      alert("Could not rename category.");
+    } finally {
+      setIsRenamingCat(false);
+    }
   }
 
   function exportFeedbacksCsv() {
@@ -483,6 +372,16 @@ export default function AdminPage() {
     document.body.removeChild(link);
   }
 
+  // All distinct categories
+  const allCategories = useMemo(() => {
+    const cats = new Set<string>();
+    products.forEach((p) => {
+      if (p.category) cats.add(p.category);
+    });
+    ["Filled Centres", "Crunch & Crisps", "Milk & Marble", "Plain Dark", "Nutty Packs"].forEach((c) => cats.add(c));
+    return Array.from(cats);
+  }, [products]);
+
   // Filtered products
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -500,99 +399,90 @@ export default function AdminPage() {
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
       const matchStatus = orderStatusFilter === "all" || o.status === orderStatusFilter;
-      const matchSearch =
-        searchQuery === "" ||
-        o.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.customer_phone.includes(searchQuery) ||
-        o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (o.transaction_id && o.transaction_id.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchStatus && matchSearch;
+      if (!matchStatus) return false;
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        o.id.toLowerCase().includes(q) ||
+        o.customer_name.toLowerCase().includes(q) ||
+        o.customer_phone.includes(q) ||
+        (o.customer_email && o.customer_email.toLowerCase().includes(q)) ||
+        (o.transaction_id && o.transaction_id.toLowerCase().includes(q))
+      );
     });
   }, [orders, orderStatusFilter, searchQuery]);
 
   // Filtered feedbacks
   const filteredFeedbacks = useMemo(() => {
     return feedbacks.filter((f) => {
-      const matchSearch =
-        searchQuery === "" ||
-        f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        f.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        f.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (f.product_name && f.product_name.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchRating = ratingFilter === "all" || f.rating.toString() === ratingFilter;
-      const matchContext = contextFilter === "all" || f.context === contextFilter;
-
-      return matchSearch && matchRating && matchContext;
+      const matchRating = ratingFilter === "all" || String(f.rating) === ratingFilter;
+      const matchContext = contextFilter === "all" || (f.context || "general") === contextFilter;
+      if (!matchRating || !matchContext) return false;
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        f.name.toLowerCase().includes(q) ||
+        f.email.toLowerCase().includes(q) ||
+        f.message.toLowerCase().includes(q) ||
+        (f.product_name && f.product_name.toLowerCase().includes(q))
+      );
     });
-  }, [feedbacks, searchQuery, ratingFilter, contextFilter]);
-
-  // Available contexts for filter
-  const availableContexts = useMemo(() => {
-    const set = new Set<string>();
-    feedbacks.forEach((f) => {
-      if (f.context) set.add(f.context);
-    });
-    return Array.from(set);
-  }, [feedbacks]);
+  }, [feedbacks, ratingFilter, contextFilter, searchQuery]);
 
   // Loading Screen
-  if (isAuthenticated === null) {
+  if (isAuthenticated === null || isLoadingData) {
     return (
       <div className="admin-login-wrapper">
-        <div style={{ color: "#c6a15b", display: "flex", alignItems: "center", gap: 10 }}>
-          <RefreshCw className="spin" size={20} />
-          <span>Verifying studio credentials…</span>
+        <div style={{ textAlign: "center" }}>
+          <div className="admin-login-brand" style={{ animation: "pulse 1.5s infinite" }}>
+            OiAI
+          </div>
+          <p style={{ marginTop: 16, color: "#dfc58b", fontSize: 14 }}>Connecting to OiAI Studio…</p>
         </div>
       </div>
     );
   }
 
-  // Login View
+  // Login Screen
   if (!isAuthenticated) {
     return (
       <div className="admin-login-wrapper">
         <div className="admin-login-card">
-          <div className="admin-login-brand">Oi</div>
-          <h1>OiAI Admin Studio</h1>
-          <p>Enter your administrative password to access products, orders, and customer feedback operations.</p>
+          <div className="admin-login-brand">OiAI</div>
+          <h1 className="admin-login-title">Atelier Admin Access</h1>
+          <p className="admin-login-subtitle">
+            Manage your homemade chocolate catalogue, view customer orders &amp; verify payments.
+          </p>
 
-          {loginError && (
-            <div className="admin-alert-error" role="alert">
-              <AlertTriangle size={16} />
-              <span>{loginError}</span>
-            </div>
-          )}
-
-          <form className="admin-login-form" onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} className="admin-login-form">
             <div className="admin-form-group">
-              <label htmlFor="admin-pass">Studio Password</label>
+              <label>Admin Passcode</label>
               <div className="admin-input-wrap">
                 <input
-                  id="admin-pass"
                   type={showPassword ? "text" : "password"}
                   className="admin-input"
-                  placeholder="Enter studio password…"
+                  placeholder="Enter admin password…"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  required
                   autoFocus
+                  required
                 />
                 <button
                   type="button"
                   className="admin-input-btn"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label="Toggle password visibility"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            <button type="submit" className="admin-login-btn" disabled={isLoggingIn}>
+            {loginError && <div className="admin-error-box">{loginError}</div>}
+
+            <button type="submit" className="admin-btn-gold" disabled={isLoggingIn}>
               {isLoggingIn ? (
                 <>
-                  <RefreshCw size={15} className="spin" />
+                  <RefreshCw size={15} className="admin-spin" />
                   <span>Verifying…</span>
                 </>
               ) : (
@@ -643,36 +533,6 @@ export default function AdminPage() {
       </header>
 
       <main className="admin-container">
-        {/* SETUP WARNING BANNER */}
-        {tableMissing && (
-          <div className="admin-alert-banner">
-            <div className="admin-alert-banner-header">
-              <AlertTriangle size={20} />
-              <span>Action Required: Initialize Supabase Database Tables</span>
-            </div>
-            <p>
-              Your Supabase credentials are connected (Project: <strong>ktennsxpuvojtyhbmnxc</strong>), but tables haven&apos;t been created yet in PostgreSQL. Run the schema script in your Supabase SQL Editor to enable live storage.
-            </p>
-            <div className="admin-alert-actions">
-              <button onClick={copySchema} className="admin-btn-gold" type="button">
-                {copiedSql ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copiedSql ? "SQL Schema Copied!" : "Copy SQL Schema"}</span>
-              </button>
-              <a
-                href="https://supabase.com/dashboard/project/ktennsxpuvojtyhbmnxc/sql"
-                target="_blank"
-                rel="noreferrer"
-                className="admin-btn-outline"
-              >
-                <span>Open Supabase SQL Editor</span> <ExternalLink size={13} />
-              </a>
-              <button onClick={checkAuthAndLoad} className="admin-btn-outline" type="button">
-                <RefreshCw size={13} /> Refresh Check
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* METRICS / STATS CARDS */}
         <div className="admin-stats-grid">
           <div className="admin-stat-card">
@@ -714,7 +574,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* TABS */}
+        {/* TABS - Strictly 3 Tabs */}
         <div className="admin-tabs" role="tablist">
           <button
             type="button"
@@ -745,24 +605,6 @@ export default function AdminPage() {
             <span>Customer Feedback</span>
             <span className="admin-tab-count">{feedbacks.length}</span>
           </button>
-
-          <button
-            type="button"
-            className={`admin-tab ${activeTab === "subscribers" ? "active" : ""}`}
-            onClick={() => setActiveTab("subscribers")}
-          >
-            <span>Newsletter Subscribers</span>
-            <span className="admin-tab-count">{subscribers.length}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`admin-tab ${activeTab === "guide" ? "active" : ""}`}
-            onClick={() => setActiveTab("guide")}
-          >
-            <Database size={15} />
-            <span>Supabase &amp; Vercel Config</span>
-          </button>
         </div>
 
         {/* ================= TAB 1: PRODUCTS ================= */}
@@ -780,61 +622,170 @@ export default function AdminPage() {
                     onChange={(e) => setProductSearch(e.target.value)}
                   />
                 </div>
+
+                <button
+                  type="button"
+                  className={`admin-btn-outline ${showCategoryMgr ? "active" : ""}`}
+                  onClick={() => setShowCategoryMgr(!showCategoryMgr)}
+                >
+                  <Tag size={13} />
+                  <span>Manage Categories ({allCategories.length})</span>
+                </button>
               </div>
 
               <div className="admin-toolbar-right">
                 <button onClick={handleSeedProducts} className="admin-btn-outline" type="button" title="Seed default chocolate items into Supabase">
-                  <Database size={13} />
+                  <RefreshCw size={13} />
                   <span>Seed Standard Menu</span>
                 </button>
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     setEditingProduct({
                       id: String(Date.now()),
                       name: "",
                       slug: "",
                       price: 349,
-                      category: "Filled Centres",
+                      category: allCategories[0] || "Filled Centres",
                       kind: "DARK CHOCOLATE",
                       tagline: "",
+                      personality: "",
                       description: "",
                       ingredients: "",
                       notes: "",
-                      badge: "HANDMADE",
+                      badge: "SMALL BATCH",
                       image: "/images/oiai/photo-milkPralines-02cd3864aed0.jpg",
                       weight: "Box of 6 pieces (120g)",
                       is_active: true,
-                    })
-                  }
+                    });
+                    setProductModalTab("card");
+                    setIsCustomCategoryInput(false);
+                  }}
                   className="admin-btn-gold"
                   type="button"
                 >
-                  <Plus size={14} />
-                  <span>Add Chocolate Item</span>
+                  <Plus size={15} />
+                  <span>Add New Chocolate</span>
                 </button>
               </div>
             </div>
 
+            {/* CATEGORY MANAGER BAR */}
+            {showCategoryMgr && (
+              <div className="admin-category-mgr">
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#dfc58b", display: "block", marginBottom: 6 }}>
+                    + Create New Category
+                  </label>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      style={{ height: 34 }}
+                      placeholder="e.g. Seasonal Gift Hampers"
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="admin-btn-gold"
+                      style={{ padding: "0 14px", height: 34, fontSize: 12, whiteSpace: "nowrap" }}
+                      onClick={() => {
+                        if (newCatName.trim()) {
+                          setEditingProduct({
+                            id: String(Date.now()),
+                            name: "",
+                            price: 349,
+                            category: newCatName.trim(),
+                            kind: "SPECIAL EDITION",
+                            badge: "NEW CATEGORY",
+                            image: "/images/oiai/photo-milkPralines-02cd3864aed0.jpg",
+                            weight: "Box of 6 pieces (120g)",
+                            is_active: true,
+                          });
+                          setNewCatName("");
+                          setShowCategoryMgr(false);
+                        }
+                      }}
+                    >
+                      Create &amp; Add Item
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ flex: 1.2, minWidth: 300, borderLeft: "1px solid rgba(198, 161, 91, 0.2)", paddingLeft: 16 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#dfc58b", display: "block", marginBottom: 6 }}>
+                    Rename Category (across all products)
+                  </label>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <select
+                      className="admin-select"
+                      style={{ height: 34, fontSize: 12 }}
+                      value={renameFromCat}
+                      onChange={(e) => setRenameFromCat(e.target.value)}
+                    >
+                      <option value="">Select Category…</option>
+                      {allCategories.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      style={{ height: 34 }}
+                      placeholder="New Name…"
+                      value={renameToCat}
+                      onChange={(e) => setRenameToCat(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="admin-btn-outline"
+                      style={{ height: 34, fontSize: 12, whiteSpace: "nowrap" }}
+                      disabled={isRenamingCat}
+                      onClick={handleRenameCategory}
+                    >
+                      {isRenamingCat ? "Renaming…" : "Rename"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PRODUCT GRID */}
             {filteredProducts.length === 0 ? (
               <div className="admin-empty-state">
                 <Package size={40} />
-                <h4>No chocolates found</h4>
-                <p>Click &quot;Seed Standard Menu&quot; to import the 9 default handcrafted chocolates into your database.</p>
+                <h4>No chocolate items found</h4>
+                <p>Seed the standard menu or add custom pieces using the button above.</p>
               </div>
             ) : (
-              <div className="admin-products-grid">
+              <div className="admin-product-grid">
                 {filteredProducts.map((p) => (
                   <div className="admin-product-card" key={p.id}>
-                    <div className="admin-product-img-wrap">
-                      <img src={p.image} alt={p.name} className="admin-product-img" />
-                      <span className={`admin-product-status-pill ${p.is_active !== false ? "active" : "inactive"}`}>
-                        {p.is_active !== false ? "Active" : "Hidden"}
-                      </span>
+                    <div className="admin-product-img-box">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="admin-product-thumb"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/images/oiai/photo-milkPralines-02cd3864aed0.jpg";
+                        }}
+                      />
+                      <span className="admin-product-cat-tag">{p.category}</span>
+                      {p.is_active === false && (
+                        <span className="admin-product-cat-tag" style={{ background: "#8b2010", left: "auto", right: 8 }}>
+                          Inactive
+                        </span>
+                      )}
                     </div>
                     <div className="admin-product-body">
-                      <span className="admin-product-category">{p.category || p.kind}</span>
-                      <h4 className="admin-product-title">{p.name}</h4>
-                      <p className="admin-product-desc">{p.description || p.tagline}</p>
+                      <div className="admin-product-header-row">
+                        <h4>{p.name}</h4>
+                        <span className="admin-badge admin-badge-gold">{p.badge || "SMALL BATCH"}</span>
+                      </div>
+                      {p.tagline && <p className="admin-product-tagline">“{p.tagline}”</p>}
+                      <p className="admin-product-desc">{p.description || "Fresh homemade chocolate."}</p>
+
                       <div className="admin-product-footer">
                         <div className="admin-product-price">
                           ₹{p.price}
@@ -843,7 +794,11 @@ export default function AdminPage() {
                         <button
                           type="button"
                           className="admin-btn-outline"
-                          onClick={() => setEditingProduct(p)}
+                          onClick={() => {
+                            setEditingProduct(p);
+                            setProductModalTab("card");
+                            setIsCustomCategoryInput(false);
+                          }}
                         >
                           <Edit size={13} />
                           <span>Edit</span>
@@ -857,7 +812,7 @@ export default function AdminPage() {
           </section>
         )}
 
-        {/* ================= TAB 2: ORDERS ================= */}
+        {/* ================= TAB 2: ORDERS (LINE-BY-LINE) ================= */}
         {activeTab === "orders" && (
           <section>
             <div className="admin-toolbar">
@@ -867,7 +822,7 @@ export default function AdminPage() {
                   <input
                     type="text"
                     className="admin-search-input"
-                    placeholder="Search by name, phone, order ID, UTR…"
+                    placeholder="Search by customer name, email, order ID, UTR…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -877,8 +832,9 @@ export default function AdminPage() {
                   value={orderStatusFilter}
                   onChange={(e) => setOrderStatusFilter(e.target.value)}
                 >
-                  <option value="all">All Order Statuses</option>
+                  <option value="all">All Statuses ({orders.length})</option>
                   <option value="pending_verification">Pending Verification</option>
+                  <option value="verified">Verified</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="dispatched">Dispatched</option>
                   <option value="delivered">Delivered</option>
@@ -897,23 +853,27 @@ export default function AdminPage() {
               <div className="admin-empty-state">
                 <ShoppingBag size={40} />
                 <h4>No orders found</h4>
-                <p>When customers order chocolates through UPI checkout, they will appear here in real time.</p>
+                <p>When customers order chocolates through UPI checkout, they will appear here line by line.</p>
               </div>
             ) : (
-              <div className="admin-orders-list">
-                {filteredOrders.map((o) => {
-                  const cleanPhone = o.customer_phone.replace(/\D/g, "");
-                  const intlPhone = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
-                  const waText = encodeURIComponent(
-                    `Hi ${o.customer_name}! 🍫 This is OiAI Homemade Chocolates regarding your order ${o.id}. Status: ${o.status.toUpperCase()}. Thank you!`
-                  );
-                  return (
-                    <div className="admin-order-card" key={o.id}>
-                      <div className="admin-order-header">
-                        <div className="admin-order-id-group">
-                          <span className="admin-order-id">{o.id}</span>
-                          <span className="admin-order-date">
-                            <Clock size={12} style={{ display: "inline", marginRight: 4 }} />
+              <div className="admin-orders-table-wrap">
+                <table className="admin-orders-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID &amp; Time</th>
+                      <th>Customer Name</th>
+                      <th>Customer Email</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map((o) => (
+                      <tr key={o.id}>
+                        <td>
+                          <span style={{ fontWeight: 800, color: "#dfc58b" }}>{o.id}</span>
+                          <span className="admin-order-date-small">
                             {new Date(o.created_at).toLocaleString("en-IN", {
                               day: "numeric",
                               month: "short",
@@ -921,94 +881,36 @@ export default function AdminPage() {
                               minute: "2-digit",
                             })}
                           </span>
-                        </div>
-                        <span className={`admin-order-status-badge admin-status-${o.status}`}>
-                          {o.status.replace(/_/g, " ")}
-                        </span>
-                      </div>
-
-                      <div className="admin-order-grid">
-                        <div className="admin-order-info-section">
-                          <h5>Customer Details</h5>
-                          <p style={{ margin: "0 0 4px", fontWeight: 600, color: "#f6f0e6" }}>{o.customer_name}</p>
-                          <p style={{ margin: "0 0 4px", fontSize: 13, color: "#ad9a89" }}>
-                            <Phone size={12} style={{ display: "inline", marginRight: 6 }} />
-                            {o.customer_phone}
-                          </p>
-                          <p style={{ margin: "0 0 4px", fontSize: 13, color: "#ad9a89" }}>
-                            <MapPin size={12} style={{ display: "inline", marginRight: 6 }} />
-                            {o.delivery_address}
-                          </p>
-                          {o.transaction_id && (
-                            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#c6a15b" }}>
-                              <strong>UTR / TX ID:</strong> <code>{o.transaction_id}</code>
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="admin-order-info-section">
-                          <h5>Order Items</h5>
-                          <div className="admin-order-items-list">
-                            {(Array.isArray(o.items) ? o.items : []).map((item, idx) => (
-                              <div className="admin-order-item-row" key={idx}>
-                                <span>{item.name} × {item.quantity}</span>
-                                <span>₹{item.price}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="admin-order-total-row">
-                            <span>Total Amount</span>
-                            <span style={{ color: "#c6a15b" }}>₹{o.total_amount}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="admin-order-actions-bar">
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontSize: 12, color: "#ad9a89" }}>Update Status:</span>
-                          <select
-                            className="admin-select"
-                            value={o.status}
-                            onChange={(e) => handleUpdateOrderStatus(o.id, e.target.value)}
-                            style={{ height: 32, fontSize: 12 }}
-                          >
-                            <option value="pending_verification">Pending Verification</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="dispatched">Dispatched</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                        </div>
-
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <a
-                            href={`https://wa.me/${intlPhone}?text=${waText}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="admin-whatsapp-btn"
-                          >
-                            <Phone size={13} />
-                            <span>WhatsApp Customer</span>
-                          </a>
+                        </td>
+                        <td style={{ fontWeight: 600, color: "#f6f0e6" }}>{o.customer_name}</td>
+                        <td style={{ color: "#ad9a89" }}>{o.customer_email || "—"}</td>
+                        <td style={{ fontWeight: 700, color: "#e8c39e" }}>₹{o.total_amount}</td>
+                        <td>
+                          <span className={`admin-order-status-badge admin-status-${o.status}`}>
+                            {o.status.replace(/_/g, " ")}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: "right" }}>
                           <button
                             type="button"
-                            className="admin-btn-icon-danger"
-                            onClick={() => handleDeleteOrder(o.id)}
-                            title="Delete Order"
+                            className="admin-btn-gold"
+                            style={{ padding: "6px 14px", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 6 }}
+                            onClick={() => setViewingOrder(o)}
                           >
-                            <Trash2 size={15} />
+                            <Eye size={13} />
+                            <span>View Details</span>
                           </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </section>
         )}
 
-        {/* ================= TAB 3: FEEDBACK ================= */}
+        {/* ================= TAB 3: CUSTOMER FEEDBACK ================= */}
         {activeTab === "feedback" && (
           <section>
             <div className="admin-toolbar">
@@ -1029,12 +931,12 @@ export default function AdminPage() {
                   value={ratingFilter}
                   onChange={(e) => setRatingFilter(e.target.value)}
                 >
-                  <option value="all">All Star Ratings</option>
-                  <option value="5">5 Stars only</option>
-                  <option value="4">4 Stars only</option>
-                  <option value="3">3 Stars only</option>
-                  <option value="2">2 Stars only</option>
-                  <option value="1">1 Star only</option>
+                  <option value="all">All Ratings</option>
+                  <option value="5">★★★★★ (5 Stars)</option>
+                  <option value="4">★★★★☆ (4 Stars)</option>
+                  <option value="3">★★★☆☆ (3 Stars)</option>
+                  <option value="2">★★☆☆☆ (2 Stars)</option>
+                  <option value="1">★☆☆☆☆ (1 Star)</option>
                 </select>
 
                 <select
@@ -1042,33 +944,17 @@ export default function AdminPage() {
                   value={contextFilter}
                   onChange={(e) => setContextFilter(e.target.value)}
                 >
-                  <option value="all">All Story Contexts</option>
-                  {availableContexts.map((ctx) => (
-                    <option key={ctx} value={ctx}>
-                      {ctx}
-                    </option>
-                  ))}
+                  <option value="all">All Contexts</option>
+                  <option value="general">General Feedback</option>
+                  <option value="sample">Sample Tasting</option>
+                  <option value="order">Order Experience</option>
                 </select>
               </div>
 
               <div className="admin-toolbar-right">
-                <button
-                  type="button"
-                  className="admin-btn-outline"
-                  onClick={exportFeedbacksCsv}
-                  disabled={!feedbacks.length}
-                >
-                  <Download size={13} />
+                <button onClick={exportFeedbacksCsv} className="admin-btn-outline" type="button">
+                  <Download size={14} />
                   <span>Export CSV</span>
-                </button>
-                <button
-                  type="button"
-                  className="admin-btn-outline"
-                  onClick={loadFeedbacks}
-                  title="Refresh list"
-                >
-                  <RefreshCw size={13} className={isLoadingData ? "spin" : ""} />
-                  <span>Refresh</span>
                 </button>
               </div>
             </div>
@@ -1076,29 +962,18 @@ export default function AdminPage() {
             {filteredFeedbacks.length === 0 ? (
               <div className="admin-empty-state">
                 <MessageSquare size={40} />
-                <h4>No feedback notes found</h4>
-                <p>Try clearing your search query or filter selections.</p>
+                <h4>No customer notes found</h4>
+                <p>When customers submit feedback through the storefront modals, notes will appear here.</p>
               </div>
             ) : (
-              <div className="admin-feedbacks">
+              <div className="admin-feedback-grid">
                 {filteredFeedbacks.map((f) => (
                   <article className="admin-feedback-card" key={f.id}>
-                    <div className="admin-feedback-top">
-                      <div className="admin-feedback-user">
-                        <span className="admin-feedback-name">
-                          {f.name}
-                          {f.context && (
-                            <span className="admin-feedback-context-badge">{f.context}</span>
-                          )}
-                          {f.product_name && (
-                            <span className="admin-feedback-context-badge" style={{ color: "#c6a15b" }}>
-                              {f.product_name}
-                            </span>
-                          )}
-                        </span>
+                    <div className="admin-feedback-header">
+                      <div>
+                        <h4 className="admin-feedback-name">{f.name}</h4>
                         <span className="admin-feedback-email">{f.email}</span>
                       </div>
-
                       <div className="admin-feedback-rating">
                         {"★".repeat(f.rating)}
                         {"☆".repeat(5 - f.rating)}
@@ -1123,8 +998,6 @@ export default function AdminPage() {
                           year: "numeric",
                           month: "short",
                           day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
                         })}
                       </span>
 
@@ -1132,7 +1005,7 @@ export default function AdminPage() {
                         type="button"
                         className="admin-btn-icon-danger"
                         onClick={() => handleDeleteFeedback(f.id)}
-                        title="Delete taste note"
+                        title="Delete note"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -1143,75 +1016,167 @@ export default function AdminPage() {
             )}
           </section>
         )}
-
-        {/* ================= TAB 4: SUBSCRIBERS ================= */}
-        {activeTab === "subscribers" && (
-          <section>
-            <div className="admin-toolbar">
-              <div className="admin-toolbar-left">
-                <h3 style={{ margin: 0, color: "#f6f0e6" }}>Newsletter Subscribers</h3>
-              </div>
-            </div>
-            {subscribers.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 20px", color: "#8a7a6a" }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
-                <p>No subscribers yet.</p>
-              </div>
-            ) : (
-              <div style={{ padding: "0 24px 24px" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ background: "#2a1208", color: "#d4b896" }}>
-                      <th style={{ padding: "10px 14px", textAlign: "left" }}>#</th>
-                      <th style={{ padding: "10px 14px", textAlign: "left" }}>Email</th>
-                      <th style={{ padding: "10px 14px", textAlign: "left" }}>Source</th>
-                      <th style={{ padding: "10px 14px", textAlign: "left" }}>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {subscribers.map((s, i) => (
-                      <tr key={s.id} style={{ borderBottom: "1px solid #3a2010" }}>
-                        <td style={{ padding: "10px 14px", color: "#8a7a6a" }}>{i + 1}</td>
-                        <td style={{ padding: "10px 14px", color: "#f6f0e6" }}>{s.email}</td>
-                        <td style={{ padding: "10px 14px", color: "#8a7a6a" }}>{s.source || "newsletter"}</td>
-                        <td style={{ padding: "10px 14px", color: "#8a7a6a" }}>
-                          {new Date(s.created_at).toLocaleDateString("en-IN")}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* ================= TAB 5: GUIDE ================= */}
-        {activeTab === "guide" && (
-          <section style={{ padding: "24px" }}>
-            <h3 style={{ color: "#f6f0e6", marginBottom: 16 }}>Supabase &amp; Vercel Config Guide</h3>
-            <div style={{ background: "#1e0f06", borderRadius: 8, padding: "16px 20px", color: "#d4b896", fontSize: 13, lineHeight: 1.7 }}>
-              <p><strong>Supabase Project:</strong> ktennsxpuvojtyhbmnxc</p>
-              <p><strong>Required ENV vars (set in Vercel dashboard):</strong></p>
-              <ul style={{ margin: "8px 0 0 16px" }}>
-                <li>NEXT_PUBLIC_SUPABASE_URL</li>
-                <li>NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
-                <li>SUPABASE_SERVICE_ROLE_KEY</li>
-                <li>ADMIN_PASSWORD</li>
-              </ul>
-              <p style={{ marginTop: 12 }}>Run the SQL from <strong>SUPABASE_SCHEMA.md</strong> in your Supabase SQL Editor to initialize tables.</p>
-            </div>
-          </section>
-        )}
-
       </main>
 
-      {/* ================= PRODUCT EDIT MODAL ================= */}
+      {/* ================= 2-PANEL ORDER DETAILS & VERIFICATION MODAL ================= */}
+      {viewingOrder && (
+        <div className="admin-modal-backdrop" onClick={() => setViewingOrder(null)}>
+          <div className="admin-modal-card admin-order-modal-wide" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <div>
+                <h3>Order Details &amp; Verification</h3>
+                <span style={{ fontSize: 13, color: "#ad9a89" }}>
+                  Order: <strong style={{ color: "#dfc58b" }}>{viewingOrder.id}</strong> · {new Date(viewingOrder.created_at).toLocaleString("en-IN")}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="admin-input-btn"
+                onClick={() => setViewingOrder(null)}
+                style={{ position: "static" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="admin-order-modal-grid">
+              {/* LEFT PANEL: All Details */}
+              <div className="admin-order-modal-left">
+                <div className="admin-detail-section">
+                  <h4>Customer Information</h4>
+                  <p><strong>Name:</strong> {viewingOrder.customer_name}</p>
+                  <p>
+                    <strong>Phone:</strong> {viewingOrder.customer_phone}
+                    <a
+                      href={`https://wa.me/${viewingOrder.customer_phone.replace(/\D/g, "").startsWith("91") ? viewingOrder.customer_phone.replace(/\D/g, "") : `91${viewingOrder.customer_phone.replace(/\D/g, "")}`}?text=${encodeURIComponent(`Hi ${viewingOrder.customer_name}! 🍫 This is OiAI Homemade Chocolates regarding your order ${viewingOrder.id}.`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ marginLeft: 10, color: "#25D366", fontSize: 12, fontWeight: 700 }}
+                    >
+                      <Phone size={11} style={{ display: "inline", marginRight: 3 }} />
+                      WhatsApp Chat ↗
+                    </a>
+                  </p>
+                  <p><strong>Email:</strong> {viewingOrder.customer_email || "Not provided"}</p>
+                  <p><strong>Delivery Address:</strong> {viewingOrder.delivery_address}</p>
+                </div>
+
+                <div className="admin-detail-section">
+                  <h4>Chocolates Ordered</h4>
+                  {(Array.isArray(viewingOrder.items) ? viewingOrder.items : []).map((it, idx) => (
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", margin: "6px 0", borderBottom: "1px dashed rgba(198, 161, 91, 0.2)", paddingBottom: 4 }}>
+                      <span>{it.name} × {it.quantity}</span>
+                      <strong>₹{it.price}</strong>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 16, fontWeight: 800, color: "#dfc58b" }}>
+                    <span>Total Amount:</span>
+                    <span>₹{viewingOrder.total_amount}</span>
+                  </div>
+                </div>
+
+                <div className="admin-detail-section">
+                  <h4>Payment Information</h4>
+                  <p><strong>Payment Method:</strong> {viewingOrder.payment_method}</p>
+                  <p>
+                    <strong>UTR / UPI Transaction ID:</strong>{" "}
+                    <code style={{ background: "#120c09", color: "#dfc58b", padding: "3px 8px", borderRadius: 4, fontWeight: 700, fontSize: 13, border: "1px solid rgba(198, 161, 91, 0.3)" }}>
+                      {viewingOrder.transaction_id || "None provided by customer"}
+                    </code>
+                  </p>
+                  <p style={{ marginTop: 8 }}>
+                    <strong>Current Status:</strong>{" "}
+                    <span className={`admin-order-status-badge admin-status-${viewingOrder.status}`}>
+                      {viewingOrder.status.replace(/_/g, " ")}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* RIGHT PANEL: Payment Screenshot & Verification */}
+              <div className="admin-order-modal-right">
+                <h4>Payment Screenshot / Proof</h4>
+                {viewingOrder.screenshot_url ? (
+                  <div className="admin-screenshot-box">
+                    <a href={viewingOrder.screenshot_url} target="_blank" rel="noreferrer" title="Click to view full image in new tab">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={viewingOrder.screenshot_url}
+                        alt="Customer Payment Screenshot"
+                        className="admin-screenshot-img"
+                      />
+                    </a>
+                    <small style={{ display: "block", marginTop: 8, color: "#ad9a89" }}>
+                      Click screenshot to expand in new tab
+                    </small>
+                  </div>
+                ) : (
+                  <div className="admin-screenshot-empty">
+                    <p style={{ margin: "0 0 8px", fontWeight: 700, color: "#dfc58b" }}>No Screenshot Attached</p>
+                    <p style={{ fontSize: 12, margin: 0 }}>
+                      Customer did not attach a screenshot. Verify the transaction in your UPI app using UTR ID:
+                    </p>
+                    <code style={{ display: "inline-block", marginTop: 8, background: "#120c09", padding: "4px 8px", color: "#dfc58b" }}>
+                      {viewingOrder.transaction_id || "N/A"}
+                    </code>
+                  </div>
+                )}
+
+                <div style={{ marginTop: "auto", paddingTop: 16 }}>
+                  <button
+                    type="button"
+                    className="admin-btn-gold"
+                    style={{ width: "100%", padding: "14px", fontSize: 15, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                    onClick={async () => {
+                      await handleUpdateOrderStatus(viewingOrder.id, "verified");
+                    }}
+                  >
+                    <Check size={18} />
+                    <span>{viewingOrder.status === "verified" ? "Status: VERIFIED ✓" : "Mark as Verified ✓"}</span>
+                  </button>
+
+                  <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                    <button
+                      type="button"
+                      className="admin-btn-outline"
+                      style={{ flex: 1, fontSize: 12 }}
+                      onClick={() => handleUpdateOrderStatus(viewingOrder.id, "dispatched")}
+                    >
+                      Dispatched
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn-outline"
+                      style={{ flex: 1, fontSize: 12 }}
+                      onClick={() => handleUpdateOrderStatus(viewingOrder.id, "delivered")}
+                    >
+                      Delivered
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn-danger"
+                      style={{ flex: 1, fontSize: 12 }}
+                      onClick={() => handleUpdateOrderStatus(viewingOrder.id, "cancelled")}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= PRODUCT EDIT MODAL (2 SECTIONS) ================= */}
       {editingProduct && (
         <div className="admin-modal-backdrop" onClick={() => setEditingProduct(null)}>
           <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3>{editingProduct.id ? `Edit ${editingProduct.name}` : "New Chocolate Piece"}</h3>
+              <div>
+                <h3>{editingProduct.id ? `Edit ${editingProduct.name || "Chocolate Item"}` : "New Chocolate Piece"}</h3>
+                <span style={{ fontSize: 12, color: "#ad9a89" }}>Customize both the home card and detail page</span>
+              </div>
               <button
                 type="button"
                 className="admin-input-btn"
@@ -1222,111 +1187,264 @@ export default function AdminPage() {
               </button>
             </div>
 
+            {/* MODAL SECTION TABS */}
+            <div className="admin-section-tabs">
+              <button
+                type="button"
+                className={`admin-section-tab ${productModalTab === "card" ? "active" : ""}`}
+                onClick={() => setProductModalTab("card")}
+              >
+                <Layers size={13} style={{ display: "inline", marginRight: 6 }} />
+                1. Storefront Card Content
+              </button>
+              <button
+                type="button"
+                className={`admin-section-tab ${productModalTab === "detail" ? "active" : ""}`}
+                onClick={() => setProductModalTab("detail")}
+              >
+                <Tag size={13} style={{ display: "inline", marginRight: 6 }} />
+                2. Detail Page &amp; Settings
+              </button>
+            </div>
+
             <form onSubmit={handleSaveProduct} className="admin-login-form">
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Chocolate Name</label>
-                  <input
-                    type="text"
-                    className="admin-input"
-                    value={editingProduct.name}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                    required
-                  />
+              {/* SECTION 1: STOREFRONT CARD CONTENT */}
+              {productModalTab === "card" && (
+                <div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Chocolate Name *</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={editingProduct.name}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                        placeholder="e.g. Sugar Rush"
+                        required
+                      />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Price (INR ₹) *</label>
+                      <input
+                        type="number"
+                        className="admin-input"
+                        value={editingProduct.price}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
+                        placeholder="399"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Category *</label>
+                      {!isCustomCategoryInput ? (
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <select
+                            className="admin-input"
+                            value={editingProduct.category}
+                            onChange={(e) => {
+                              if (e.target.value === "__CUSTOM__") {
+                                setIsCustomCategoryInput(true);
+                              } else {
+                                setEditingProduct({ ...editingProduct, category: e.target.value });
+                              }
+                            }}
+                          >
+                            {allCategories.map((cat) => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                            <option value="__CUSTOM__">+ New Custom Category…</option>
+                          </select>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <input
+                            type="text"
+                            className="admin-input"
+                            placeholder="Enter new category name…"
+                            value={editingProduct.category}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="admin-btn-outline"
+                            style={{ padding: "0 10px", fontSize: 11 }}
+                            onClick={() => setIsCustomCategoryInput(false)}
+                          >
+                            List
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Sub-Kind / Headline</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={editingProduct.kind || ""}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, kind: e.target.value })}
+                        placeholder="e.g. CRUNCH & CRISPS, DARK CHOCOLATE"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Card Badge / Batch Label</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={editingProduct.badge || ""}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
+                        placeholder="e.g. THE HAPPY CRUNCH or SMALL BATCH"
+                      />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Weight / Packaging</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={editingProduct.weight || ""}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, weight: e.target.value })}
+                        placeholder="Box of 8 pieces (140g)"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label>Personality (Displayed on card)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={editingProduct.personality || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, personality: e.target.value })}
+                      placeholder="e.g. Chaotic, bubbly, the life of the party"
+                    />
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label>Tagline / Motto Quote</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={editingProduct.tagline || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, tagline: e.target.value })}
+                      placeholder="e.g. Soft on the inside. Chaos on the outside."
+                    />
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label>Card Description</label>
+                    <textarea
+                      className="admin-input"
+                      style={{ height: 65, padding: "8px 12px", resize: "vertical" }}
+                      value={editingProduct.description || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                      placeholder="Marshmallows and silk-chip crisps tucked under a chocolate coat."
+                    />
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label>Ingredients Line</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={editingProduct.ingredients || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, ingredients: e.target.value })}
+                      placeholder="Marshmallows and Silk chocolate-chip crisps covered in chocolate"
+                    />
+                  </div>
+
+                  {/* IMAGE UPLOAD & URL */}
+                  <div className="admin-form-group">
+                    <label>Chocolate Photograph *</label>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                      <label className="admin-upload-device-btn">
+                        <Upload size={14} />
+                        <span>Upload from Device</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={handleDeviceImageUpload}
+                        />
+                      </label>
+                      <span style={{ fontSize: 11, color: "#ad9a89" }}>or paste image URL:</span>
+                    </div>
+
+                    <input
+                      type="text"
+                      className="admin-input"
+                      style={{ marginTop: 8 }}
+                      value={editingProduct.image || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                      placeholder="https://... or data:image/..."
+                      required
+                    />
+
+                    {editingProduct.image && (
+                      <div className="admin-img-preview-box">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={editingProduct.image}
+                          alt="Preview"
+                          className="admin-img-preview"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/images/oiai/photo-milkPralines-02cd3864aed0.jpg";
+                          }}
+                        />
+                        <span style={{ fontSize: 12, color: "#dfc58b" }}>Live Image Preview</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="admin-form-group">
-                  <label>Price (INR ₹)</label>
-                  <input
-                    type="number"
-                    className="admin-input"
-                    value={editingProduct.price}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                    required
-                  />
+              )}
+
+              {/* SECTION 2: DETAIL PAGE & SETTINGS */}
+              {productModalTab === "detail" && (
+                <div>
+                  <div className="admin-form-group">
+                    <label>Tasting Notes (Shown in Detail View)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={editingProduct.notes || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, notes: e.target.value })}
+                      placeholder="e.g. Marshmallows · silk-chip crisps · chocolate"
+                    />
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label>URL Slug</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={editingProduct.slug || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, slug: e.target.value })}
+                      placeholder="e.g. sugar-rush"
+                    />
+                  </div>
+
+                  <div className="admin-form-group" style={{ marginTop: 16 }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={editingProduct.is_active !== false}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, is_active: e.target.checked })}
+                      />
+                      <span style={{ fontWeight: 600, color: "#f6f0e6" }}>Active &amp; Visible in Storefront</span>
+                    </label>
+                    <p style={{ margin: "4px 0 0 24px", fontSize: 11, color: "#ad9a89" }}>
+                      Uncheck to temporarily hide this chocolate from the home shelf without deleting it.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Category</label>
-                  <select
-                    className="admin-input"
-                    value={editingProduct.category}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                  >
-                    <option value="Filled Centres">Filled Centres</option>
-                    <option value="Crunch & Crisps">Crunch &amp; Crisps</option>
-                    <option value="Milk & Marble">Milk &amp; Marble</option>
-                    <option value="Plain Dark">Plain Dark</option>
-                    <option value="Nutty Packs">Nutty Packs</option>
-                  </select>
-                </div>
-                <div className="admin-form-group">
-                  <label>Weight / Packaging</label>
-                  <input
-                    type="text"
-                    className="admin-input"
-                    value={editingProduct.weight || ""}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, weight: e.target.value })}
-                    placeholder="Box of 6 pieces (120g)"
-                  />
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Tagline / Motto</label>
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={editingProduct.tagline || ""}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, tagline: e.target.value })}
-                  placeholder="e.g. A little nut. A lot of feelings."
-                />
-              </div>
-
-              <div className="admin-form-group">
-                <label>Description</label>
-                <textarea
-                  className="admin-input"
-                  style={{ height: 75, padding: "10px 14px", resize: "vertical" }}
-                  value={editingProduct.description || ""}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                />
-              </div>
-
-              <div className="admin-form-group">
-                <label>Ingredients</label>
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={editingProduct.ingredients || ""}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, ingredients: e.target.value })}
-                />
-              </div>
-
-              <div className="admin-form-group">
-                <label>Image URL</label>
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={editingProduct.image || ""}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="admin-form-group">
-                <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={editingProduct.is_active !== false}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, is_active: e.target.checked })}
-                  />
-                  <span>Active &amp; Visible in Storefront</span>
-                </label>
-              </div>
-
-              <div style={{ display: "flex", gap: 12, marginTop: 14 }}>
+              <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
                 <button type="submit" className="admin-btn-gold" style={{ flex: 1 }} disabled={isSavingProduct}>
                   {isSavingProduct ? "Saving Changes…" : "Save Product ✓"}
                 </button>

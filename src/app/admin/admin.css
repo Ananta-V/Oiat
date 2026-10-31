@@ -1089,3 +1089,212 @@
 }
 
 
+
+/* ================= ORDERS LINE-BY-LINE TABLE ================= */
+.admin-orders-table-wrap {
+  background: #17100c;
+  border: 1px solid rgba(198, 161, 91, 0.2);
+  border-radius: 10px;
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.admin-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.admin-orders-table th {
+  background: #241812;
+  color: #dfc58b;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(198, 161, 91, 0.2);
+  white-space: nowrap;
+}
+
+.admin-orders-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(246, 240, 230, 0.06);
+  vertical-align: middle;
+}
+
+.admin-orders-table tr:hover td {
+  background: rgba(198, 161, 91, 0.04);
+}
+
+.admin-order-date-small {
+  display: block;
+  font-size: 11px;
+  color: #ad9a89;
+  margin-top: 2px;
+}
+
+/* ================= 2-PANEL ORDER DETAILS & VERIFICATION MODAL ================= */
+.admin-order-modal-wide {
+  max-width: 920px !important;
+}
+
+.admin-order-modal-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 760px) {
+  .admin-order-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-order-modal-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-detail-section {
+  background: #221712;
+  border: 1px solid rgba(198, 161, 91, 0.15);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.admin-detail-section h4 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #dfc58b;
+  text-transform: uppercase;
+}
+
+.admin-detail-section p {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #e5ded4;
+  line-height: 1.5;
+}
+
+.admin-order-modal-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-order-modal-right h4 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #dfc58b;
+  text-transform: uppercase;
+}
+
+.admin-screenshot-box {
+  background: #120c09;
+  border: 1px solid rgba(198, 161, 91, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.admin-screenshot-img {
+  max-width: 100%;
+  max-height: 280px;
+  border-radius: 6px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+.admin-screenshot-img:hover {
+  transform: scale(1.02);
+}
+
+.admin-screenshot-empty {
+  background: #17100c;
+  border: 1px dashed rgba(198, 161, 91, 0.25);
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  color: #ad9a89;
+}
+
+/* ================= PRODUCT EDIT SECTION TABS & UPLOAD ================= */
+.admin-section-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(198, 161, 91, 0.2);
+  padding-bottom: 10px;
+}
+
+.admin-section-tab {
+  background: #241812;
+  color: #ad9a89;
+  border: 1px solid rgba(198, 161, 91, 0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-section-tab.active {
+  background: #c6a15b;
+  color: #120c09;
+  border-color: #c6a15b;
+}
+
+.admin-img-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  background: #120c09;
+  border: 1px solid rgba(198, 161, 91, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.admin-img-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #c6a15b;
+}
+
+.admin-upload-device-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #2a1811;
+  color: #dfc58b;
+  border: 1px dashed #c6a15b;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.admin-upload-device-btn:hover {
+  background: #3c2419;
+}
+
+.admin-category-mgr {
+  background: #1e140f;
+  border: 1px solid rgba(198, 161, 91, 0.2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
