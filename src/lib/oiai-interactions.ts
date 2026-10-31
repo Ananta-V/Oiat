@@ -517,7 +517,7 @@ export function initializeOiAI() {
       // Wrap long values
       const maxW = 320;
       const words = value.split(' ');
-      let line = ''; let lx = 270; let ly = y;
+      let line = ''; const lx = 270; let ly = y;
       for (const word of words) {
         const test = line + (line ? ' ' : '') + word;
         if (ctx.measureText(test).width > maxW && line) {
