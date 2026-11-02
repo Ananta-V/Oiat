@@ -679,6 +679,8 @@ export function initializeOiAI() {
 
   // Story-led feedback: the form writes to Supabase; catalogue products remain local.
   let activeFeedbackProduct = { id: '', name: '' };
+  let currentFeedbackMode: 'taste_note' | 'memory' = 'taste_note';
+
   function openFeedback(context = 'Your OiAI story', productName = '', productId = '') {
     closeQuickView();
     // Reset the form to blank state every time it opens
@@ -691,45 +693,170 @@ export function initializeOiAI() {
     $('#feedback-error').hidden = true;
     activeFeedbackProduct = { id: String(productId || ''), name: String(productName || '') };
 
-    // Set the context dropdown
-    const ctxEl = $('#feedback-context') as HTMLSelectElement | null;
-    if (ctxEl) {
-      const target = (productName || context || '').toLowerCase().trim();
-      let matched = false;
-      for (let i = 0; i < ctxEl.options.length; i++) {
-        const val = ctxEl.options[i].value.toLowerCase().trim();
-        const text = ctxEl.options[i].text.toLowerCase().trim();
-        if (val === target || text.includes(target) || (target && target.includes(val))) {
-          ctxEl.selectedIndex = i;
-          matched = true;
-          break;
-        }
-      }
-      if (!matched && (productName || context)) {
-        const newOpt = document.createElement('option');
-        newOpt.value = productName || context;
-        newOpt.textContent = productName || context;
-        ctxEl.appendChild(newOpt);
-        ctxEl.selectedIndex = ctxEl.options.length - 1;
-      }
+    // Context-aware mode: Chocolate Review (taste note) vs Moment/Memory Sharing
+    const isMemoryMode = !productName && (
+      context === 'Your OiAI story' ||
+      context.toLowerCase().includes('memory') ||
+      context.toLowerCase().includes('story') ||
+      context.toLowerCase().includes('family') ||
+      context.toLowerCase().includes('special') ||
+      context.toLowerCase().includes('table') ||
+      context.toLowerCase().includes('crew') ||
+      context.toLowerCase().includes('moment')
+    );
+    currentFeedbackMode = isMemoryMode ? 'memory' : 'taste_note';
+
+    // 1. Eyebrow
+    const eyebrowEl = $('#feedback-eyebrow');
+    if (eyebrowEl) {
+      eyebrowEl.textContent = isMemoryMode ? 'A SWEET MOMENT · SHARED WITH LOVE' : 'A LITTLE NOTE MEANS A LOT';
     }
 
-    // Set placeholder based on product
-    const msgEl = $('#feedback-message') as HTMLTextAreaElement | null;
-    if (msgEl) {
-      msgEl.placeholder = productName ? `Tell us what you think of ${productName} — the taste, the texture, or what you felt…` : 'Tell us what made you smile (or what could be sweeter)…';
-    }
-
+    // 2. Title
     const titleEl = $('#feedback-title');
     if (titleEl) {
-      titleEl.innerHTML = productName ? `Taste note for <em>${escapeHTML(productName)}</em>` : `Help us make <em>more memories.</em>`;
+      if (isMemoryMode) {
+        titleEl.innerHTML = 'Tell us your <em>chocolate story.</em>';
+      } else {
+        titleEl.innerHTML = productName
+          ? `Taste note for <em>${escapeHTML(productName)}</em>`
+          : 'Help us make <em>more memories.</em>';
+      }
     }
 
+    // 3. Intro
     const introEl = $('#feedback-intro');
     if (introEl) {
-      introEl.innerHTML = productName
-        ? `Tell us what you noticed in your sample of <strong>${escapeHTML(productName)}</strong> — the first taste, the texture, and the feeling it left behind.`
-        : `Tell us what you noticed in your sample — the first taste, the texture, and the feeling it left behind. Your honest little note helps our tiny kitchen make every bite better.`;
+      if (isMemoryMode) {
+        introEl.innerHTML = 'Some memories happen around a Sunday table, some in a late-night text, and some with the last chocolate split in half. Tell us about a moment made sweeter with chocolate.';
+      } else if (productName) {
+        introEl.innerHTML = `Tell us what you noticed in your sample of <strong>${escapeHTML(productName)}</strong> — the first taste, the texture, and the feeling it left behind.`;
+      } else {
+        introEl.innerHTML = 'Tell us what you noticed in your sample — the first taste, the texture, and the feeling it left behind. Your honest little note helps our tiny kitchen make every bite better.';
+      }
+    }
+
+    // 4. Dropdown Label & Context Options
+    const ctxTitle = $('#feedback-context-title');
+    const ctxEl = $('#feedback-context') as HTMLSelectElement | null;
+    if (ctxTitle) {
+      ctxTitle.textContent = isMemoryMode ? 'WHAT WAS THIS MOMENT ABOUT?' : 'WHICH SAMPLE DID YOU TRY?';
+    }
+
+    if (ctxEl) {
+      if (isMemoryMode) {
+        const memoryOptions = [
+          'Family table & Sunday memories',
+          'A gift for someone special',
+          'Late-night laughs with friends',
+          'A small win for myself',
+          'Our OiAI chocolate story',
+          'Just because / Sweet craving',
+        ];
+        ctxEl.innerHTML = '';
+        memoryOptions.forEach(opt => {
+          const optEl = document.createElement('option');
+          optEl.value = opt;
+          optEl.textContent = opt;
+          ctxEl.appendChild(optEl);
+        });
+        const target = (context || '').toLowerCase().trim();
+        for (let i = 0; i < ctxEl.options.length; i++) {
+          if (ctxEl.options[i].value.toLowerCase().includes(target) || (target && target.includes(ctxEl.options[i].value.toLowerCase()))) {
+            ctxEl.selectedIndex = i;
+            break;
+          }
+        }
+      } else {
+        // Fetch or ensure chocolate options
+        fetch('/api/site-settings')
+          .then(r => r.json())
+          .then(data => {
+            if (data && Array.isArray(data.sampleOptions) && data.sampleOptions.length > 0) {
+              ctxEl.innerHTML = '';
+              data.sampleOptions.forEach((opt: string) => {
+                const optEl = document.createElement('option');
+                optEl.value = opt;
+                optEl.textContent = opt;
+                ctxEl.appendChild(optEl);
+              });
+              const target = (productName || context || '').toLowerCase().trim();
+              for (let i = 0; i < ctxEl.options.length; i++) {
+                const val = ctxEl.options[i].value.toLowerCase().trim();
+                const text = ctxEl.options[i].text.toLowerCase().trim();
+                if (val === target || text.includes(target) || (target && target.includes(val))) {
+                  ctxEl.selectedIndex = i;
+                  return;
+                }
+              }
+              if (productName) {
+                const newOpt = document.createElement('option');
+                newOpt.value = productName;
+                newOpt.textContent = productName;
+                ctxEl.appendChild(newOpt);
+                ctxEl.selectedIndex = ctxEl.options.length - 1;
+              }
+            }
+          })
+          .catch(() => {});
+
+        const target = (productName || context || '').toLowerCase().trim();
+        let matched = false;
+        for (let i = 0; i < ctxEl.options.length; i++) {
+          const val = ctxEl.options[i].value.toLowerCase().trim();
+          const text = ctxEl.options[i].text.toLowerCase().trim();
+          if (val === target || text.includes(target) || (target && target.includes(val))) {
+            ctxEl.selectedIndex = i;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched && productName) {
+          const newOpt = document.createElement('option');
+          newOpt.value = productName;
+          newOpt.textContent = productName;
+          ctxEl.appendChild(newOpt);
+          ctxEl.selectedIndex = ctxEl.options.length - 1;
+        }
+      }
+    }
+
+    // 5. Rating Legend
+    const ratingLegend = $('#feedback-rating-legend');
+    if (ratingLegend) {
+      ratingLegend.innerHTML = isMemoryMode
+        ? 'HOW SPECIAL WAS THAT MOMENT? <span>Pick one</span>'
+        : 'HOW WAS THAT FIRST BITE? <span>Pick one</span>';
+    }
+
+    // 6. Feelings Legend
+    const feelingsLegend = $('#feedback-feelings-legend');
+    if (feelingsLegend) {
+      feelingsLegend.innerHTML = isMemoryMode
+        ? 'WHAT DID IT LEAVE YOU FEELING? <span>Choose any</span>'
+        : 'WHAT DID IT MAKE YOU FEEL? <span>Choose any</span>';
+    }
+
+    // 7. Story Title & Placeholder
+    const storyTitle = $('#feedback-story-title');
+    if (storyTitle) {
+      storyTitle.textContent = isMemoryMode ? 'YOUR STORY OR MEMORY' : 'YOUR LITTLE TASTE NOTE';
+    }
+    const msgEl = $('#feedback-message') as HTMLTextAreaElement | null;
+    if (msgEl) {
+      if (isMemoryMode) {
+        msgEl.placeholder = 'Tell us who you shared it with, the occasion, or what made that moment unforgettable…';
+      } else if (productName) {
+        msgEl.placeholder = `Tell us what you think of ${productName} — the taste, the texture, or what you felt…`;
+      } else {
+        msgEl.placeholder = 'Describe the taste, the texture, the moment — or what you’d make even better…';
+      }
+    }
+
+    // 8. Submit Button Text
+    const submitText = $('#feedback-submit-text');
+    if (submitText) {
+      submitText.textContent = isMemoryMode ? 'Share my story' : 'Send my little note';
     }
 
     $('#feedback-backdrop').classList.add('open');
@@ -807,8 +934,15 @@ export function initializeOiAI() {
       // Close the feedback modal and show the separate success overlay
       closeFeedback();
       const overlay = $('#feedback-success-overlay') as HTMLElement | null;
+      const heading = $('#success-heading');
       const msg = $('#success-message');
-      if (msg) msg.textContent = `Thank you, ${name}. Your ${rating}/5 sample rating is part of our little story.${feelingLine} Your note means a lot to our tiny kitchen.`;
+      if (currentFeedbackMode === 'memory') {
+        if (heading) heading.textContent = 'That story made our day.';
+        if (msg) msg.textContent = `Thank you, ${name}. Your story has been saved to our little memory album.${feelingLine} Stories like yours are why our tiny kitchen loves what we do.`;
+      } else {
+        if (heading) heading.textContent = 'That was sweeter than chocolate.';
+        if (msg) msg.textContent = `Thank you, ${name}. Your ${rating}/5 sample rating is part of our little story.${feelingLine} Your note means a lot to our tiny kitchen.`;
+      }
       if (overlay) {
         overlay.style.display = 'flex';
         overlay.setAttribute('aria-hidden', 'false');

@@ -97,7 +97,7 @@ export default function OiAIFeedbackModal() {
         </div>
       </div>
       <div className={"feedback-modal-body"}>
-        <span className={"eyebrow"}>A LITTLE NOTE MEANS A LOT</span>
+        <span className={"eyebrow"} id={"feedback-eyebrow"}>A LITTLE NOTE MEANS A LOT</span>
         <h2 id={"feedback-title"}>
           Help us make <em>more memories.</em>
         </h2>
@@ -132,7 +132,7 @@ export default function OiAIFeedbackModal() {
             </label>
           </div>
           <label>
-            WHICH SAMPLE DID YOU TRY?
+            <span id={"feedback-context-title"}>WHICH SAMPLE DID YOU TRY?</span>
             <select id={"feedback-context"} name={"context"}>
               {sampleOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -142,7 +142,7 @@ export default function OiAIFeedbackModal() {
             </select>
           </label>
           <fieldset className={"taste-rating"}>
-            <legend>
+            <legend id={"feedback-rating-legend"}>
               HOW WAS THAT FIRST BITE? <span>Pick one</span>
             </legend>
             <div className={"rating-options"}>
@@ -184,7 +184,7 @@ export default function OiAIFeedbackModal() {
             </div>
           </fieldset>
           <fieldset className={"feeling-picker"}>
-            <legend>
+            <legend id={"feedback-feelings-legend"}>
               WHAT DID IT MAKE YOU FEEL? <span>Choose any</span>
             </legend>
             <div className={"mood-options"}>
@@ -215,7 +215,7 @@ export default function OiAIFeedbackModal() {
             </div>
           </fieldset>
           <label className={"feedback-story-label"}>
-            YOUR LITTLE TASTE NOTE
+            <span id={"feedback-story-title"}>YOUR LITTLE TASTE NOTE</span>
             <textarea
               id={"feedback-message"}
               name={"feedback"}
@@ -226,8 +226,8 @@ export default function OiAIFeedbackModal() {
               rows={4}
             />
           </label>
-          <button className={"button button-ink feedback-submit"} type={"submit"}>
-            <span>Send my little note</span>
+          <button className={"button button-ink feedback-submit"} id={"feedback-submit-btn"} type={"submit"}>
+            <span id={"feedback-submit-text"}>Send my little note</span>
             <b>♥</b>
           </button>
           <small className={"feedback-privacy"}>
