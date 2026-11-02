@@ -47,29 +47,31 @@ export default function OiAIFeedbackModal() {
         </p>
 
         <form id={"feedback-form"} className={"feedback-form"}>
-          <label>
-            YOUR NAME
-            <input
-              id={"feedback-name"}
-              name={"name"}
-              autoComplete={"name"}
-              placeholder={"What should we call you?"}
-              required={true}
-              maxLength={80}
-            />
-          </label>
-          <label>
-            YOUR EMAIL
-            <input
-              id={"feedback-email"}
-              name={"email"}
-              type={"email"}
-              autoComplete={"email"}
-              placeholder={"Where can your thank-you find you?"}
-              required={true}
-              maxLength={160}
-            />
-          </label>
+          <div className={"feedback-form-row"}>
+            <label>
+              YOUR NAME
+              <input
+                id={"feedback-name"}
+                name={"name"}
+                autoComplete={"name"}
+                placeholder={"What should we call you?"}
+                required={true}
+                maxLength={80}
+              />
+            </label>
+            <label>
+              YOUR EMAIL
+              <input
+                id={"feedback-email"}
+                name={"email"}
+                type={"email"}
+                autoComplete={"email"}
+                placeholder={"Where can your thank-you find you?"}
+                required={true}
+                maxLength={160}
+              />
+            </label>
+          </div>
           <label>
             WHICH SAMPLE DID YOU TRY?
             <select id={"feedback-context"} name={"context"}>

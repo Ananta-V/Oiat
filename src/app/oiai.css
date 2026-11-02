@@ -2952,3 +2952,421 @@ body.intro-active { overflow:hidden !important; }
 .qv-download-receipt-btn:hover {
   opacity: 0.88;
 }
+
+
+/* ============================================================
+   OiAI Taste Note / Feedback Modal (Rock-solid, Non-glitchy, Correct Size)
+============================================================ */
+.feedback-backdrop,
+#feedback-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1900 !important;
+  background: rgba(36, 13, 5, 0.68) !important;
+  backdrop-filter: blur(5px) !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease !important;
+}
+
+.feedback-backdrop.open,
+#feedback-backdrop.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.feedback-modal,
+#feedback-modal {
+  position: fixed !important;
+  z-index: 2000 !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -48%) scale(0.96) !important;
+  width: min(580px, calc(100vw - 28px)) !important;
+  max-height: min(88dvh, 740px) !important;
+  background: #fdf8ee !important;
+  border: 1px solid #c79e76 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 25px 80px rgba(35, 14, 6, 0.45) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.feedback-modal.open,
+#feedback-modal.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+/* Hide conflicting split art banner so form has full, clean focus */
+#feedback-modal .feedback-modal-art,
+.feedback-modal .feedback-modal-art {
+  display: none !important;
+}
+
+/* Close button pinned to top right */
+#feedback-modal .feedback-close,
+.feedback-modal .feedback-close {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  z-index: 30 !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  background: #f0deca !important;
+  border: 1px solid #c49f78 !important;
+  color: #4b1e0d !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  transition: background 0.2s, transform 0.2s !important;
+}
+
+#feedback-modal .feedback-close:hover,
+.feedback-modal .feedback-close:hover {
+  background: #e3caa8 !important;
+  transform: scale(1.08) !important;
+}
+
+/* Form body with comfortable inner scroll */
+#feedback-modal .feedback-modal-body,
+.feedback-modal .feedback-modal-body {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 28px 28px 24px !important;
+  box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 540px) {
+  #feedback-modal .feedback-modal-body,
+  .feedback-modal .feedback-modal-body {
+    padding: 22px 18px 20px !important;
+  }
+}
+
+#feedback-modal .feedback-modal-body > .eyebrow {
+  display: inline-block !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1.4px !important;
+  color: #8c5936 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 6px !important;
+}
+
+#feedback-modal .feedback-modal-body h2 {
+  font-family: var(--display, Georgia, serif) !important;
+  font-size: clamp(26px, 5.5vw, 34px) !important;
+  line-height: 1.05 !important;
+  color: #3b170c !important;
+  margin: 0 0 8px 0 !important;
+  max-width: none !important;
+}
+
+#feedback-modal .feedback-modal-body h2 em {
+  color: #9d572e !important;
+  font-style: italic !important;
+}
+
+#feedback-modal .feedback-intro {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: #6d4630 !important;
+  margin: 0 0 18px 0 !important;
+  max-width: none !important;
+}
+
+/* Form layout */
+#feedback-modal .feedback-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  width: 100% !important;
+}
+
+#feedback-modal .feedback-form-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+@media (max-width: 500px) {
+  #feedback-modal .feedback-form-row {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+#feedback-modal .feedback-form label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #7b4c2b !important;
+  text-transform: uppercase !important;
+  width: 100% !important;
+}
+
+#feedback-modal .feedback-form input:not([type="radio"]):not([type="checkbox"]),
+#feedback-modal .feedback-form select,
+#feedback-modal .feedback-form textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border: 1px solid #cfa87f !important;
+  border-radius: 8px !important;
+  background: #fffcf7 !important;
+  color: #3b170c !important;
+  padding: 11px 14px !important;
+  font-size: 14px !important;
+  font-family: var(--body, sans-serif) !important;
+  outline: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+#feedback-modal .feedback-form input:focus,
+#feedback-modal .feedback-form select:focus,
+#feedback-modal .feedback-form textarea:focus {
+  border-color: #8b4523 !important;
+  box-shadow: 0 0 0 3px rgba(139, 69, 35, 0.14) !important;
+}
+
+#feedback-modal .feedback-form textarea {
+  min-height: 85px !important;
+  resize: vertical !important;
+  line-height: 1.5 !important;
+}
+
+/* Fieldset legends */
+#feedback-modal .feedback-form fieldset {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+#feedback-modal .feedback-form legend {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #7b4c2b !important;
+  text-transform: uppercase !important;
+  margin-bottom: 8px !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+#feedback-modal .feedback-form legend span {
+  font-weight: 500 !important;
+  color: #a47d5b !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  margin-left: 6px !important;
+}
+
+/* Star rating options */
+#feedback-modal .rating-options {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 6px !important;
+  width: 100% !important;
+}
+
+#feedback-modal .rating-options label {
+  cursor: pointer !important;
+  position: relative !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+#feedback-modal .rating-options input {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+}
+
+#feedback-modal .rating-options label > span {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  padding: 8px 4px !important;
+  min-height: 54px !important;
+  background: #fbf3e4 !important;
+  border: 1px solid #d8b894 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  text-align: center !important;
+}
+
+#feedback-modal .rating-options b {
+  font-size: 13px !important;
+  color: #c78839 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+#feedback-modal .rating-options small {
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  color: #7b4c2b !important;
+  text-transform: none !important;
+}
+
+#feedback-modal .rating-options input:checked + span {
+  background: #4b1e0d !important;
+  border-color: #4b1e0d !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 10px rgba(75, 30, 13, 0.25) !important;
+}
+
+#feedback-modal .rating-options input:checked + span b {
+  color: #ffd880 !important;
+}
+
+#feedback-modal .rating-options input:checked + span small {
+  color: #ffecc6 !important;
+}
+
+/* Mood / feeling chips */
+#feedback-modal .mood-options {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+#feedback-modal .mood-options label {
+  cursor: pointer !important;
+  margin: 0 !important;
+  width: auto !important;
+}
+
+#feedback-modal .mood-options input {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+}
+
+#feedback-modal .mood-options label > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 7px 13px !important;
+  border-radius: 20px !important;
+  border: 1px solid #d8b894 !important;
+  background: #fbf3e4 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #6b4025 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+#feedback-modal .mood-options input:checked + span {
+  background: #4b1e0d !important;
+  border-color: #4b1e0d !important;
+  color: #ffecc6 !important;
+  box-shadow: 0 2px 8px rgba(75, 30, 13, 0.2) !important;
+}
+
+/* Submit button */
+#feedback-modal .feedback-submit {
+  width: 100% !important;
+  height: 48px !important;
+  background: #3b170c !important;
+  color: #fbf3e4 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.8px !important;
+  text-transform: uppercase !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  margin-top: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+#feedback-modal .feedback-submit:hover {
+  background: #542211 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(59, 23, 12, 0.3) !important;
+}
+
+#feedback-modal .feedback-privacy {
+  font-size: 11px !important;
+  color: #8c6a50 !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+  margin: 0 !important;
+}
+
+/* Success card */
+#feedback-modal .feedback-thanks {
+  text-align: center !important;
+  padding: 24px 8px !important;
+}
+
+#feedback-modal .thanks-stamp {
+  float: none !important;
+  margin: 0 auto 16px !important;
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 50% !important;
+  border: 1px solid #784127 !important;
+  outline: 1px dashed #784127 !important;
+  outline-offset: -5px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #784127 !important;
+}
+
+#feedback-modal .thanks-stamp b {
+  font-size: 24px !important;
+  color: #a8421d !important;
+}
+
+#feedback-modal .feedback-thanks h3 {
+  font-family: var(--display, Georgia, serif) !important;
+  font-size: 26px !important;
+  color: #3b170c !important;
+  margin: 0 0 10px !important;
+}
+
+#feedback-modal .feedback-thanks p {
+  font-size: 13px !important;
+  color: #633c24 !important;
+  line-height: 1.6 !important;
+  margin: 0 0 20px !important;
+}

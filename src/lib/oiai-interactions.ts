@@ -56,7 +56,7 @@ export function initializeOiAI() {
     return PRODUCTS.filter(product => state.filter === 'All' || product.filter === state.filter);
   }
   function productCard(product, index) {
-    return `<button type="button" class="product-card hanging-product" data-product-name="${escapeHTML(product.name)}" data-product-id="${product.id}" aria-label="View details and order ${escapeHTML(product.name)}" style="--hang-angle:${index % 2 ? '1.15deg' : '-1.05deg'};--hang-drop:${[0, 8, 3, 11, 2, 7, 1, 9, 4][index] || 0}px;animation-delay:${Math.min(index, 8) * 45}ms">
+    return `<button type="button" class="product-card hanging-product" data-product-name="${escapeHTML(product.name)}" data-product-id="${product.id}" aria-label="Leave a taste note for ${escapeHTML(product.name)}" style="--hang-angle:${index % 2 ? '1.15deg' : '-1.05deg'};--hang-drop:${[0, 8, 3, 11, 2, 7, 1, 9, 4][index] || 0}px;animation-delay:${Math.min(index, 8) * 45}ms">
     <span class="product-card-kicker"><span>${String(product.id).padStart(2, '0')} / 09</span><span>${product.badge}</span></span>
     <span class="product-photo-frame"><img src="${product.image}" alt="${escapeHTML(product.name)}" loading="eager" onerror="this.onerror=null;this.src='${fallbackPhoto}'" /></span>
     <span class="product-info">
@@ -71,7 +71,7 @@ export function initializeOiAI() {
       <span class="product-ingredients"><b>INGREDIENTS</b> ${escapeHTML(product.ingredients)}</span>
       <span class="product-card-bottom">
         <span class="product-price-pill">${money(product.price)} · ${escapeHTML(product.weight || 'Box of 6')}</span>
-        <span class="batch-mark">Order / Details ↗</span>
+        <span class="batch-mark">Leave a little love ↗</span>
       </span>
     </span>
   </button>`;
@@ -527,6 +527,12 @@ export function initializeOiAI() {
     qvQty = 1;
   }
 
+  // Preserve quick-view & payment buying logic accessible on window
+  try {
+    (window as any).openQuickView = openQuickView;
+    (window as any).closeQuickView = closeQuickView;
+  } catch (_) {}
+
   function generateReceiptImage(details: {
     orderId: string; productName: string; quantity: number; totalPrice: number;
     custName: string; custPhone: string; custEmail: string; custAddress: string; utr: string;
@@ -679,22 +685,52 @@ export function initializeOiAI() {
     activeFeedbackProduct = { id: String(productId || ''), name: String(productName || '') };
 
     // Set the context dropdown
-    const ctxEl = $('#feedback-context');
+    const ctxEl = $('#feedback-context') as HTMLSelectElement | null;
     if (ctxEl) {
-      const hasOption = [...ctxEl.options].some(o => o.value === context);
-      ctxEl.value = hasOption ? context : 'Your OiAI story';
+      const target = (productName || context || '').toLowerCase().trim();
+      let matched = false;
+      for (let i = 0; i < ctxEl.options.length; i++) {
+        const val = ctxEl.options[i].value.toLowerCase().trim();
+        const text = ctxEl.options[i].text.toLowerCase().trim();
+        if (val === target || text.includes(target) || (target && target.includes(val))) {
+          ctxEl.selectedIndex = i;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched && (productName || context)) {
+        const newOpt = document.createElement('option');
+        newOpt.value = productName || context;
+        newOpt.textContent = productName || context;
+        ctxEl.appendChild(newOpt);
+        ctxEl.selectedIndex = ctxEl.options.length - 1;
+      }
     }
 
     // Set placeholder based on product
-    const msgEl = $('#feedback-message');
+    const msgEl = $('#feedback-message') as HTMLTextAreaElement | null;
     if (msgEl) {
-      msgEl.placeholder = productName ? `Tell us what you think of ${productName}…` : 'Tell us what made you smile (or what could be sweeter)…';
+      msgEl.placeholder = productName ? `Tell us what you think of ${productName} — the taste, the texture, or what you felt…` : 'Tell us what made you smile (or what could be sweeter)…';
+    }
+
+    const titleEl = $('#feedback-title');
+    if (titleEl) {
+      titleEl.innerHTML = productName ? `Taste note for <em>${escapeHTML(productName)}</em>` : `Help us make <em>more memories.</em>`;
+    }
+
+    const introEl = $('#feedback-intro');
+    if (introEl) {
+      introEl.innerHTML = productName
+        ? `Tell us what you noticed in your sample of <strong>${escapeHTML(productName)}</strong> — the first taste, the texture, and the feeling it left behind.`
+        : `Tell us what you noticed in your sample — the first taste, the texture, and the feeling it left behind. Your honest little note helps our tiny kitchen make every bite better.`;
     }
 
     $('#feedback-backdrop').classList.add('open');
     $('#feedback-modal').classList.add('open');
     $('#feedback-modal').setAttribute('aria-hidden', 'false');
     document.body.classList.add('no-scroll');
+    const nameInput = $('#feedback-name') as HTMLInputElement | null;
+    if (nameInput) setTimeout(() => nameInput.focus(), 150);
   }
   function closeFeedback() {
     $('#feedback-backdrop').classList.remove('open');
@@ -778,7 +814,14 @@ export function initializeOiAI() {
     setFilter(button.dataset.category);
     $('#shop').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   });
-  $('#product-grid').addEventListener('click', event => { const card = event.target.closest('.product-card[data-product-id]'); if (card) openQuickView(card.dataset.productId); });
+  $('#product-grid').addEventListener('click', event => {
+    const card = event.target.closest('.product-card[data-product-id]');
+    if (card) {
+      const prodName = card.dataset.productName || '';
+      const prodId = card.dataset.productId || '';
+      openFeedback(prodName, prodName, prodId);
+    }
+  });
   $('#quick-view-content').addEventListener('click', event => {
     const feedback = event.target.closest('[data-feedback-open]');
     if (feedback) { const context = feedback.dataset.feedbackOpen || 'Chocolate I tried'; closeQuickView(); openFeedback(context, feedback.dataset.productName || '', feedback.dataset.productId || ''); }
