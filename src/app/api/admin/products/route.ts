@@ -25,11 +25,15 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    if (!data || data.length === 0) {
+    const cleanProducts = (data || []).filter(
+      (p: any) => p.category !== "__settings__" && p.id !== "site_settings"
+    );
+
+    if (cleanProducts.length === 0) {
       return NextResponse.json({ products: FALLBACK_PRODUCTS, tableMissing: false, isDefault: true });
     }
 
-    return NextResponse.json({ products: data, tableMissing: false, isDefault: false });
+    return NextResponse.json({ products: cleanProducts, tableMissing: false, isDefault: false });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

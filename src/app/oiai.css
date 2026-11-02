@@ -3382,3 +3382,46 @@ body.intro-active { overflow:hidden !important; }
     padding: 36px 24px 32px !important;
   }
 }
+
+
+/* ============================================================
+   Enhanced 4-Column Footer with Contact Links
+   ============================================================ */
+.site-footer {
+  grid-template-columns: 1.4fr 1fr 1fr 1.35fr !important;
+  column-gap: 36px !important;
+}
+
+.footer-contact-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  font-size: 9.5px !important;
+  color: #70422a !important;
+  transition: transform .25s, color .25s !important;
+  word-break: break-all !important;
+}
+
+.footer-contact-link:hover {
+  color: var(--ink) !important;
+  transform: translateX(3px) !important;
+}
+
+.footer-contact-link .icon {
+  font-size: 11px !important;
+  flex-shrink: 0 !important;
+}
+
+@media (max-width: 960px) {
+  .site-footer {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 28px 20px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-footer {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+}

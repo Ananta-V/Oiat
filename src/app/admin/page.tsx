@@ -24,6 +24,7 @@ import {
   Tag,
   Upload,
   Layers,
+  Settings,
 } from "lucide-react";
 
 type ProductItem = {
@@ -100,12 +101,21 @@ export default function AdminPage() {
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   // Tabs & filters
-  const [activeTab, setActiveTab] = useState<"products" | "orders" | "feedback">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "feedback" | "settings">("products");
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [contextFilter, setContextFilter] = useState("all");
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
   const [productSearch, setProductSearch] = useState("");
+
+  // Site settings state (Footer contact links)
+  const [siteSettings, setSiteSettings] = useState({
+    whatsapp: "+91 81251 07227",
+    instagram: "@oiai.chocolates",
+    email: "hello@oiaichocolates.com",
+  });
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsSavedMessage, setSettingsSavedMessage] = useState("");
 
   // Product edit modal state
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
@@ -165,7 +175,7 @@ export default function AdminPage() {
       } else {
         setStats(data.stats);
       }
-      await Promise.all([loadProducts(), loadOrders(), loadFeedbacks()]);
+      await Promise.all([loadProducts(), loadOrders(), loadFeedbacks(), loadSettings()]);
     } catch (err) {
       console.error(err);
       setIsAuthenticated(false);
@@ -174,12 +184,52 @@ export default function AdminPage() {
     }
   }
 
+  async function loadSettings() {
+    try {
+      const res = await fetch("/api/site-settings");
+      const data = await res.json();
+      if (data && (data.whatsapp || data.instagram || data.email)) {
+        setSiteSettings({
+          whatsapp: data.whatsapp || "",
+          instagram: data.instagram || "",
+          email: data.email || "",
+        });
+      }
+    } catch (e) {
+      console.error("Failed loading site settings", e);
+    }
+  }
+
+  async function handleSaveSettings(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSavingSettings(true);
+    setSettingsSavedMessage("");
+    try {
+      const res = await fetch("/api/site-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(siteSettings),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert("Failed to save settings: " + (data.error || "Unknown error"));
+      } else {
+        setSettingsSavedMessage("Footer links updated successfully! They will appear immediately on the storefront.");
+        setTimeout(() => setSettingsSavedMessage(""), 5000);
+      }
+    } catch (err: any) {
+      alert("Error saving settings: " + err.message);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  }
+
   async function loadProducts() {
     try {
       const res = await fetch("/api/admin/products");
       const data = await res.json();
       if (data.products) {
-        setProducts(data.products);
+        setProducts(data.products.filter((p: any) => p.category !== "__settings__" && p.id !== "site_settings"));
       }
     } catch (e) {
       console.error("Failed loading products", e);
@@ -644,6 +694,15 @@ export default function AdminPage() {
             <span>Customer Feedback</span>
             <span className="admin-tab-count">{feedbacks.length}</span>
           </button>
+
+          <button
+            type="button"
+            className={`admin-tab ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+          >
+            <Settings size={15} />
+            <span>Footer Links</span>
+          </button>
         </div>
 
         {/* ================= TAB 1: PRODUCTS ================= */}
@@ -1044,6 +1103,113 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </section>
+        )}
+
+        {/* ================= TAB 4: FOOTER & CONTACT SETTINGS ================= */}
+        {activeTab === "settings" && (
+          <section className="admin-settings-container">
+            <div className="admin-settings-card">
+              <div className="admin-settings-header">
+                <h3>Storefront Footer &amp; Contact Links</h3>
+                <p>
+                  These contact links appear in the footer on the main storefront. Customers can tap WhatsApp to chat directly, visit your Instagram profile, or send you an email.
+                </p>
+              </div>
+
+              {settingsSavedMessage && (
+                <div className="admin-settings-success">
+                  <Check size={16} />
+                  <span>{settingsSavedMessage}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveSettings} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div className="admin-form-group">
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#dfc58b", marginBottom: 6, letterSpacing: 0.5 }}>
+                    WHATSAPP NUMBER *
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: 14, top: 12, fontSize: 14 }}>💬</span>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      style={{ paddingLeft: 42 }}
+                      value={siteSettings.whatsapp}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, whatsapp: e.target.value })}
+                      placeholder="e.g. +91 81251 07227"
+                      required
+                    />
+                  </div>
+                  <small style={{ color: "#8c7662", fontSize: 11, marginTop: 4, display: "block" }}>
+                    Include country code (e.g. +91 81251 07227). Clicking opens a WhatsApp conversation.
+                  </small>
+                </div>
+
+                <div className="admin-form-group">
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#dfc58b", marginBottom: 6, letterSpacing: 0.5 }}>
+                    INSTAGRAM HANDLE / PROFILE *
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: 14, top: 12, fontSize: 14 }}>📸</span>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      style={{ paddingLeft: 42 }}
+                      value={siteSettings.instagram}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, instagram: e.target.value })}
+                      placeholder="e.g. @oiai.chocolates"
+                      required
+                    />
+                  </div>
+                  <small style={{ color: "#8c7662", fontSize: 11, marginTop: 4, display: "block" }}>
+                    Your Instagram handle (e.g. @oiai.chocolates). Clicking opens your Instagram profile page.
+                  </small>
+                </div>
+
+                <div className="admin-form-group">
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#dfc58b", marginBottom: 6, letterSpacing: 0.5 }}>
+                    CONTACT EMAIL *
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: 14, top: 12, fontSize: 14 }}>✉</span>
+                    <input
+                      type="email"
+                      className="admin-input"
+                      style={{ paddingLeft: 42 }}
+                      value={siteSettings.email}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, email: e.target.value })}
+                      placeholder="e.g. hello@oiaichocolates.com"
+                      required
+                    />
+                  </div>
+                  <small style={{ color: "#8c7662", fontSize: 11, marginTop: 4, display: "block" }}>
+                    Kitchen or customer care email. Clicking opens the visitor&apos;s email client.
+                  </small>
+                </div>
+
+                <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
+                  <button
+                    type="submit"
+                    className="admin-btn-gold"
+                    disabled={isSavingSettings}
+                    style={{ padding: "12px 24px", fontSize: 13 }}
+                  >
+                    {isSavingSettings ? (
+                      <>
+                        <RefreshCw size={15} className="admin-spin" />
+                        <span>Saving Changes…</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check size={15} />
+                        <span>Save Footer Links</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </section>
         )}
       </main>
