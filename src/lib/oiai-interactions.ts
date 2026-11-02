@@ -56,7 +56,7 @@ export function initializeOiAI() {
     return PRODUCTS.filter(product => state.filter === 'All' || product.filter === state.filter);
   }
   function productCard(product, index) {
-    return `<button type="button" class="product-card hanging-product" data-product-name="${escapeHTML(product.name)}" data-product-id="${product.id}" aria-label="Leave a taste note for ${escapeHTML(product.name)}" style="--hang-angle:${index % 2 ? '1.15deg' : '-1.05deg'};--hang-drop:${[0, 8, 3, 11, 2, 7, 1, 9, 4][index] || 0}px;animation-delay:${Math.min(index, 8) * 45}ms">
+    return `<button type="button" class="product-card hanging-product" data-product-name="${escapeHTML(product.name)}" data-product-id="${product.id}" data-feedback-open="${escapeHTML(product.name)}" aria-label="Leave a taste note for ${escapeHTML(product.name)}" style="--hang-angle:${index % 2 ? '1.15deg' : '-1.05deg'};--hang-drop:${[0, 8, 3, 11, 2, 7, 1, 9, 4][index] || 0}px;animation-delay:${Math.min(index, 8) * 45}ms">
     <span class="product-card-kicker"><span>${String(product.id).padStart(2, '0')} / 09</span><span>${product.badge}</span></span>
     <span class="product-photo-frame"><img src="${product.image}" alt="${escapeHTML(product.name)}" loading="eager" onerror="this.onerror=null;this.src='${fallbackPhoto}'" /></span>
     <span class="product-info">
@@ -181,6 +181,11 @@ export function initializeOiAI() {
   function openQuickView(id: any) {
     const p = PRODUCTS.find(product => String(product.id) === String(id) || product.id === Number(id));
     if (!p) return;
+    // Card interaction: redirect directly to the taste note feedback form for this chocolate!
+    openFeedback(p.name, p.name, String(p.id));
+    return;
+
+    // Preserved payment / checkout window logic below
     state.activeProduct = p.id;
     qvActiveProduct = p;
     qvQty = 1;

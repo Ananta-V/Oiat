@@ -2185,33 +2185,10 @@ body.intro-active { overflow:hidden !important; }
 /* ============================================================
    OiAI Detailed Product & UPI Checkout Modal System
 ============================================================ */
-.quick-view-modal {
-  position: fixed !important;
-  z-index: 1000 !important;
-  top: 50% !important;
-  left: 50% !important;
-  width: min(880px, calc(100% - 24px)) !important;
-  max-height: min(780px, calc(100dvh - 32px)) !important;
-  min-height: min(480px, calc(100dvh - 40px)) !important;
-  background: #fbf5eb !important;
-  border: 1px solid #c49f78 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 25px 80px rgba(35, 14, 6, 0.45) !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -48%) scale(0.96);
-  transition: opacity 0.3s ease, transform 0.35s ease;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.quick-view-modal.open {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: translate(-50%, -50%) scale(1) !important;
-  visibility: visible !important;
+/* Quick-view buying modal preserved but disconnected from card click in favor of feedback taste note form */
+.quick-view-modal,
+#quick-view-modal {
+  display: none !important;
 }
 
 #quick-view-content {
