@@ -1,6 +1,7 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import type { Product } from "@/types/product";
 
 type ProductCardProps = {
@@ -8,28 +9,36 @@ type ProductCardProps = {
   index: number;
 };
 
+function handleCardClick(e: React.MouseEvent | React.KeyboardEvent, product: Product) {
+  e.preventDefault();
+  if (typeof window !== "undefined" && typeof (window as any).openFeedback === "function") {
+    (window as any).openFeedback(product.name, product.name, product.id);
+  }
+}
+
 export function ProductCard({ product, index }: ProductCardProps) {
   return (
-    <article className="product-card" style={{ animationDelay: `${index * 70}ms` }}>
-      <Link
-        className="product-card__image-link"
-        href={`/products/${product.slug}`}
-        aria-label={`View ${product.name}`}
-      >
-        <div className="product-card__image-wrap">
-          <Image
-            src={product.image}
-            alt={product.imageAlt}
-            fill
-            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
-            className="product-card__image"
-          />
-          {product.note ? <span className="product-card__note">{product.note}</span> : null}
-          <span className="product-card__quick-view" aria-hidden="true">
-            <ArrowUpRight size={18} strokeWidth={1.5} />
-          </span>
-        </div>
-      </Link>
+    <article
+      className="product-card"
+      style={{ animationDelay: `${index * 70}ms`, cursor: "pointer" }}
+      onClick={(e) => handleCardClick(e, product)}
+      role="button"
+      tabIndex={0}
+      aria-label={`Leave a taste note for ${product.name}`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") handleCardClick(e, product);
+      }}
+    >
+      <div className="product-card__image-wrap">
+        <Image
+          src={product.image}
+          alt={product.imageAlt}
+          fill
+          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
+          className="product-card__image"
+        />
+        {product.note ? <span className="product-card__note">{product.note}</span> : null}
+      </div>
 
       <div className="product-card__meta">
         <span className="eyebrow">{product.category}</span>
@@ -40,9 +49,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
         </span>
       </div>
 
-      <h3 className="product-card__title">
-        <Link href={`/products/${product.slug}`}>{product.name}</Link>
-      </h3>
+      <h3 className="product-card__title">{product.name}</h3>
       <p className="product-card__description">{product.description}</p>
     </article>
   );

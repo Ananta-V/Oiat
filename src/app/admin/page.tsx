@@ -1256,10 +1256,16 @@ export default function AdminPage() {
                     <div className="admin-form-group">
                       <label>Price (INR ₹) *</label>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         className="admin-input"
-                        value={editingProduct.price}
-                        onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
+                        value={editingProduct.price === 0 ? '' : String(editingProduct.price)}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/[^0-9]/g, '');
+                          setEditingProduct({ ...editingProduct, price: raw === '' ? 0 : parseInt(raw, 10) });
+                        }}
+                        onFocus={(e) => e.target.select()}
                         placeholder="399"
                         required
                       />

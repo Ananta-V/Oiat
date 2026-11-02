@@ -3347,3 +3347,38 @@ body.intro-active { overflow:hidden !important; }
   line-height: 1.6 !important;
   margin: 0 0 20px !important;
 }
+
+
+/* ============================================================
+   Feedback Success Overlay Modal
+   Opens as a separate centered modal after form submission
+   ============================================================ */
+#feedback-success-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2200 !important;
+  background: rgba(37, 14, 6, 0.72) !important;
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+}
+#feedback-success-overlay[style*="flex"] {
+  display: flex !important;
+}
+#feedback-success-card {
+  background: var(--paper-light, #fdf6ec) !important;
+  border: 1px solid #bb9670 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 80px rgba(37, 14, 6, 0.28) !important;
+  padding: 48px 40px 40px !important;
+  max-width: 460px !important;
+  width: 100% !important;
+  text-align: center !important;
+  position: relative !important;
+}
+@media (max-width: 520px) {
+  #feedback-success-card {
+    padding: 36px 24px 32px !important;
+  }
+}

@@ -2,6 +2,32 @@ import React from "react";
 
 export default function OiAIFeedbackModal() {
   return (
+    <>
+    {/* ── Thank-you success overlay (opens after form submit) ── */}
+    <div
+      id="feedback-success-overlay"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="success-heading"
+      aria-hidden="true"
+      style={{ display: "none" }}
+    >
+      <div id="feedback-success-card">
+        <div className="thanks-stamp" style={{ margin: "0 auto 20px" }}>
+          THANK YOU
+          <br />
+          <b>♥</b>
+        </div>
+        <span className="eyebrow">A LITTLE SOMETHING, FROM US</span>
+        <h3 id="success-heading" style={{ margin: "12px 0 8px" }}>That was sweeter than chocolate.</h3>
+        <p id="success-message" style={{ margin: "0 0 24px", lineHeight: 1.6 }}>Your note means the world to our tiny kitchen.</p>
+        <button type="button" id="success-close-btn" className="button button-ink">
+          <span>Close</span>
+          <b>✕</b>
+        </button>
+      </div>
+    </div>
+
     <section
       className={"feedback-modal"}
       id={"feedback-modal"}
@@ -210,5 +236,6 @@ export default function OiAIFeedbackModal() {
         </div>
       </div>
     </section>
+    </>
   );
 }

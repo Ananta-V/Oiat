@@ -536,6 +536,8 @@ export function initializeOiAI() {
   try {
     (window as any).openQuickView = openQuickView;
     (window as any).closeQuickView = closeQuickView;
+    // Expose openFeedback so React ProductCard components can call it
+    (window as any).openFeedback = openFeedback;
   } catch (_) {}
 
   function generateReceiptImage(details: {
@@ -759,6 +761,16 @@ export function initializeOiAI() {
   $('#feedback-close').addEventListener('click', closeFeedback);
   $('#feedback-backdrop').addEventListener('click', closeFeedback);
   const fbResetBtn = $('#feedback-reset-btn'); if (fbResetBtn) fbResetBtn.addEventListener('click', () => { const form = $('#feedback-form'); if (form) { form.reset(); form.hidden = false; } if ($('#feedback-thanks')) $('#feedback-thanks').hidden = true; if ($('#feedback-error')) $('#feedback-error').hidden = true; });
+
+  // Wire up the success overlay close button
+  const successCloseBtn = $('#success-close-btn');
+  function closeSuccessOverlay() {
+    const overlay = $('#feedback-success-overlay') as HTMLElement | null;
+    if (overlay) { overlay.style.display = 'none'; overlay.setAttribute('aria-hidden', 'true'); }
+    document.body.classList.remove('no-scroll');
+  }
+  if (successCloseBtn) successCloseBtn.addEventListener('click', closeSuccessOverlay);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSuccessOverlay(); } });
   $('#feedback-form').addEventListener('submit', async event => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -795,9 +807,18 @@ export function initializeOiAI() {
       if (!response.ok) throw new Error(result.error || 'Your feedback could not be saved. Please try again.');
 
       const feelingLine = feelings.length ? ` It left you feeling ${feelings.join(', ').toLowerCase()}.` : '';
-      $('#feedback-form').hidden = true;
-      $('#feedback-thanks').hidden = false;
-      $('#thanks-message').textContent = `Thank you, ${name}. Your ${rating}/5 sample rating is part of our little story.${feelingLine} Your note means a lot to our tiny kitchen.`;
+      // Close the feedback modal and show the separate success overlay
+      closeFeedback();
+      const overlay = $('#feedback-success-overlay') as HTMLElement | null;
+      const msg = $('#success-message');
+      if (msg) msg.textContent = `Thank you, ${name}. Your ${rating}/5 sample rating is part of our little story.${feelingLine} Your note means a lot to our tiny kitchen.`;
+      if (overlay) {
+        overlay.style.display = 'flex';
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('no-scroll');
+        const closeBtn = $('#success-close-btn');
+        if (closeBtn) closeBtn.focus();
+      }
     } catch (error) {
       $('#feedback-error').textContent = error.message || 'Your feedback could not be saved. Please try again.';
       $('#feedback-error').hidden = false;
