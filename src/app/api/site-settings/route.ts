@@ -4,10 +4,30 @@ import { checkAdminAuth } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
+const DEFAULT_SAMPLE_OPTIONS = [
+  "A little of everything",
+  "Secret Crush (Dark & Almond)",
+  "Bad Habit (Dark & Cocoa Cashew)",
+  "Sweet Surrender (Nutella Centre)",
+  "Sugar Rush (Marshmallow & Crisps)",
+  "Mixed Signals (White & Dark Marble)",
+  "First Love (Plain Milk Chocolate)",
+  "Dark Affair (70% Dark Chocolate)",
+  "Pocket Mischief (Chocolate Almonds)",
+  "Caught Snacking (Chocolate Cashews)",
+  "Filled Centres (Filled-centre chocolate)",
+  "Milk & Marble (Milk or marble chocolate)",
+  "Crunch & Crisps (Crunch & crisps)",
+  "Plain Dark (Plain dark chocolate)",
+  "Nutty Packs (Chocolate-covered nuts)",
+  "Chocolate I tried (A little sample)",
+];
+
 const DEFAULT_SITE_SETTINGS = {
   whatsapp: "+91 81251 07227",
   instagram: "@oiai.chocolates",
   email: "hello@oiaichocolates.com",
+  sampleOptions: DEFAULT_SAMPLE_OPTIONS,
 };
 
 export async function GET() {
@@ -29,6 +49,10 @@ export async function GET() {
         whatsapp: parsed.whatsapp || DEFAULT_SITE_SETTINGS.whatsapp,
         instagram: parsed.instagram || DEFAULT_SITE_SETTINGS.instagram,
         email: parsed.email || DEFAULT_SITE_SETTINGS.email,
+        sampleOptions:
+          Array.isArray(parsed.sampleOptions) && parsed.sampleOptions.length > 0
+            ? parsed.sampleOptions
+            : DEFAULT_SAMPLE_OPTIONS,
       });
     } catch {
       return NextResponse.json(DEFAULT_SITE_SETTINGS);
@@ -50,6 +74,10 @@ export async function POST(request: Request) {
       whatsapp: String(body.whatsapp || DEFAULT_SITE_SETTINGS.whatsapp).trim(),
       instagram: String(body.instagram || DEFAULT_SITE_SETTINGS.instagram).trim(),
       email: String(body.email || DEFAULT_SITE_SETTINGS.email).trim(),
+      sampleOptions:
+        Array.isArray(body.sampleOptions) && body.sampleOptions.length > 0
+          ? body.sampleOptions.map((s: any) => String(s).trim()).filter(Boolean)
+          : DEFAULT_SAMPLE_OPTIONS,
     };
 
     const supabase = getSupabaseAdmin();

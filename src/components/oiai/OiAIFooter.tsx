@@ -76,7 +76,6 @@ export default function OiAIFooter() {
         <a href={instaUrl} target="_blank" rel="noopener noreferrer" id="instagram-link">
           Follow the crumbs ↗
         </a>
-        <a href="/admin">Studio admin ↗</a>
       </div>
 
       <div className="footer-col">

@@ -108,12 +108,36 @@ export default function AdminPage() {
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
   const [productSearch, setProductSearch] = useState("");
 
-  // Site settings state (Footer contact links)
-  const [siteSettings, setSiteSettings] = useState({
+  // Site settings state (Footer contact links & sample dropdown options)
+  const [siteSettings, setSiteSettings] = useState<{
+    whatsapp: string;
+    instagram: string;
+    email: string;
+    sampleOptions: string[];
+  }>({
     whatsapp: "+91 81251 07227",
     instagram: "@oiai.chocolates",
     email: "hello@oiaichocolates.com",
+    sampleOptions: [
+      "A little of everything",
+      "Secret Crush (Dark & Almond)",
+      "Bad Habit (Dark & Cocoa Cashew)",
+      "Sweet Surrender (Nutella Centre)",
+      "Sugar Rush (Marshmallow & Crisps)",
+      "Mixed Signals (White & Dark Marble)",
+      "First Love (Plain Milk Chocolate)",
+      "Dark Affair (70% Dark Chocolate)",
+      "Pocket Mischief (Chocolate Almonds)",
+      "Caught Snacking (Chocolate Cashews)",
+      "Filled Centres (Filled-centre chocolate)",
+      "Milk & Marble (Milk or marble chocolate)",
+      "Crunch & Crisps (Crunch & crisps)",
+      "Plain Dark (Plain dark chocolate)",
+      "Nutty Packs (Chocolate-covered nuts)",
+      "Chocolate I tried (A little sample)",
+    ],
   });
+  const [newSampleOptionInput, setNewSampleOptionInput] = useState("");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSavedMessage, setSettingsSavedMessage] = useState("");
 
@@ -188,16 +212,42 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/site-settings");
       const data = await res.json();
-      if (data && (data.whatsapp || data.instagram || data.email)) {
-        setSiteSettings({
-          whatsapp: data.whatsapp || "",
-          instagram: data.instagram || "",
-          email: data.email || "",
-        });
+      if (data) {
+        setSiteSettings(prev => ({
+          whatsapp: data.whatsapp || prev.whatsapp,
+          instagram: data.instagram || prev.instagram,
+          email: data.email || prev.email,
+          sampleOptions: Array.isArray(data.sampleOptions) && data.sampleOptions.length > 0
+            ? data.sampleOptions
+            : prev.sampleOptions,
+        }));
       }
     } catch (e) {
       console.error("Failed loading site settings", e);
     }
+  }
+
+  function handleAddSampleOption() {
+    const trimmed = newSampleOptionInput.trim();
+    if (!trimmed) return;
+    const current = siteSettings.sampleOptions || [];
+    if (current.includes(trimmed)) {
+      alert("This option already exists in the list.");
+      return;
+    }
+    setSiteSettings({
+      ...siteSettings,
+      sampleOptions: [...current, trimmed],
+    });
+    setNewSampleOptionInput("");
+  }
+
+  function handleRemoveSampleOption(index: number) {
+    const current = siteSettings.sampleOptions || [];
+    setSiteSettings({
+      ...siteSettings,
+      sampleOptions: current.filter((_, i) => i !== index),
+    });
   }
 
   async function handleSaveSettings(e: React.FormEvent) {
@@ -214,7 +264,7 @@ export default function AdminPage() {
       if (!res.ok) {
         alert("Failed to save settings: " + (data.error || "Unknown error"));
       } else {
-        setSettingsSavedMessage("Footer links updated successfully! They will appear immediately on the storefront.");
+        setSettingsSavedMessage("Settings and sample options updated successfully! They will appear immediately on the storefront.");
         setTimeout(() => setSettingsSavedMessage(""), 5000);
       }
     } catch (err: any) {
@@ -701,7 +751,7 @@ export default function AdminPage() {
             onClick={() => setActiveTab("settings")}
           >
             <Settings size={15} />
-            <span>Footer Links</span>
+            <span>Settings &amp; Samples</span>
           </button>
         </div>
 
@@ -1188,22 +1238,101 @@ export default function AdminPage() {
                   </small>
                 </div>
 
-                <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
+                {/* Visualized WHICH SAMPLE DID YOU TRY? Options */}
+                <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(223, 197, 139, 0.2)" }}>
+                  <div style={{ marginBottom: 14 }}>
+                    <h4 style={{ fontSize: 15, color: "#dfc58b", margin: "0 0 5px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span>&ldquo;WHICH SAMPLE DID YOU TRY?&rdquo; Dropdown Options</span>
+                      <span style={{ fontSize: 11, background: "#2a1b14", color: "#dfc58b", padding: "2px 8px", borderRadius: 10 }}>
+                        {siteSettings.sampleOptions?.length || 0} options
+                      </span>
+                    </h4>
+                    <p style={{ fontSize: 12, color: "#ad9a89", margin: 0, lineHeight: 1.5 }}>
+                      These are the chocolate and sample choices displayed in the feedback form dropdown on the storefront. Add new varieties or remove old ones, then click Save below.
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      style={{ flex: 1 }}
+                      value={newSampleOptionInput}
+                      onChange={(e) => setNewSampleOptionInput(e.target.value)}
+                      placeholder="e.g. Pistachio Ganache (Dark &amp; Pistachio)"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddSampleOption();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="admin-btn-gold"
+                      onClick={handleAddSampleOption}
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <Plus size={14} />
+                      <span>Add Option</span>
+                    </button>
+                  </div>
+
+                  <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                    maxHeight: 280,
+                    overflowY: "auto",
+                    paddingRight: 4,
+                    marginBottom: 10,
+                  }}>
+                    {(siteSettings.sampleOptions || []).map((opt, idx) => (
+                      <div
+                        key={`${opt}-${idx}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "8px 12px",
+                          background: "#140c08",
+                          border: "1px solid rgba(223, 197, 139, 0.15)",
+                          borderRadius: 6,
+                          fontSize: 12.5,
+                          color: "#e6d5bc",
+                        }}
+                      >
+                        <span>{opt}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSampleOption(idx)}
+                          className="admin-btn-icon-danger"
+                          title="Remove option"
+                          style={{ width: 26, height: 26, padding: 0 }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
                   <button
                     type="submit"
                     className="admin-btn-gold"
                     disabled={isSavingSettings}
-                    style={{ padding: "12px 24px", fontSize: 13 }}
+                    style={{ padding: "12px 28px", fontSize: 13 }}
                   >
                     {isSavingSettings ? (
                       <>
                         <RefreshCw size={15} className="admin-spin" />
-                        <span>Saving Changes…</span>
+                        <span>Saving All Changes…</span>
                       </>
                     ) : (
                       <>
                         <Check size={15} />
-                        <span>Save Footer Links</span>
+                        <span>Save Settings &amp; Dropdown Options</span>
                       </>
                     )}
                   </button>

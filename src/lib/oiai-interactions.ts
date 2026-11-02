@@ -753,10 +753,7 @@ export function initializeOiAI() {
     $('#feedback-thanks').hidden = true;
     $('#feedback-error').hidden = true;
   }
-  $('#memory-card-grid').addEventListener('click', event => {
-    const card = event.target.closest('[data-feedback-context]');
-    if (card) openFeedback(card.dataset.feedbackContext, card.dataset.productName || '', card.dataset.productId || '');
-  });
+  // Memory cards for "For the people who feel like home" are now display-only (no feedback modal on click)
   $$('[data-feedback-open]').forEach(button => button.addEventListener('click', () => openFeedback(button.dataset.feedbackOpen || 'Your OiAI story', button.dataset.productName || '', button.dataset.productId || '')));
   $('#feedback-close').addEventListener('click', closeFeedback);
   $('#feedback-backdrop').addEventListener('click', closeFeedback);

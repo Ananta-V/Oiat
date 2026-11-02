@@ -3425,3 +3425,137 @@ body.intro-active { overflow:hidden !important; }
     gap: 24px !important;
   }
 }
+
+
+/* ============================================================
+   Community Reviews & Comments Section (Home Page)
+   ============================================================ */
+.reviews-section {
+  padding: 80px clamp(24px, 5vw, 80px);
+  background: var(--paper-warm, #f7efe1);
+  border-top: 1px solid rgba(75, 30, 13, 0.12);
+  border-bottom: 1px solid rgba(75, 30, 13, 0.12);
+}
+
+.reviews-heading {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 48px;
+}
+
+.reviews-heading .eyebrow {
+  color: #9a6538;
+  letter-spacing: 1.8px;
+  font-size: 8px;
+  font-weight: 800;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.reviews-heading h2 {
+  font: 600 clamp(32px, 3.8vw, 48px) / 1.05 var(--display);
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  margin: 0 0 12px;
+}
+
+.reviews-heading h2 em {
+  font-style: italic;
+  color: #98562f;
+}
+
+.reviews-heading p {
+  color: #8c6247;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 960px) {
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.review-card {
+  background: #fcf6eb;
+  border: 1px solid #cfae88;
+  border-radius: 12px;
+  padding: 24px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(45, 18, 8, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+
+.review-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(45, 18, 8, 0.1);
+}
+
+.review-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.review-author-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  margin: 0;
+}
+
+.review-stars {
+  color: #b87333;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.review-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #5c3a25;
+  margin: 0 0 16px;
+  flex: 1;
+  font-style: italic;
+}
+
+.review-chocolate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #edd8bf;
+  color: #68391d;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(104, 57, 29, 0.2);
+  align-self: flex-start;
+}
+
+/* "For the people who feel like home" cards: non-interactive */
+.memory-card {
+  cursor: default !important;
+}
+.memory-card:hover, .memory-card:focus-visible {
+  cursor: default !important;
+}

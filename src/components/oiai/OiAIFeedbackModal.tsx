@@ -1,6 +1,39 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+
+const INITIAL_SAMPLE_OPTIONS = [
+  "A little of everything",
+  "Secret Crush (Dark & Almond)",
+  "Bad Habit (Dark & Cocoa Cashew)",
+  "Sweet Surrender (Nutella Centre)",
+  "Sugar Rush (Marshmallow & Crisps)",
+  "Mixed Signals (White & Dark Marble)",
+  "First Love (Plain Milk Chocolate)",
+  "Dark Affair (70% Dark Chocolate)",
+  "Pocket Mischief (Chocolate Almonds)",
+  "Caught Snacking (Chocolate Cashews)",
+  "Filled Centres (Filled-centre chocolate)",
+  "Milk & Marble (Milk or marble chocolate)",
+  "Crunch & Crisps (Crunch & crisps)",
+  "Plain Dark (Plain dark chocolate)",
+  "Nutty Packs (Chocolate-covered nuts)",
+  "Chocolate I tried (A little sample)",
+];
 
 export default function OiAIFeedbackModal() {
+  const [sampleOptions, setSampleOptions] = useState<string[]>(INITIAL_SAMPLE_OPTIONS);
+
+  useEffect(() => {
+    fetch("/api/site-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.sampleOptions) && data.sampleOptions.length > 0) {
+          setSampleOptions(data.sampleOptions);
+        }
+      })
+      .catch(() => {});
+  }, []);
   return (
     <>
     {/* ── Thank-you success overlay (opens after form submit) ── */}
@@ -101,22 +134,11 @@ export default function OiAIFeedbackModal() {
           <label>
             WHICH SAMPLE DID YOU TRY?
             <select id={"feedback-context"} name={"context"}>
-              <option value={"Your OiAI story"}>A little of everything</option>
-              <option value={"Secret Crush"}>Secret Crush (Dark &amp; Almond)</option>
-              <option value={"Bad Habit"}>Bad Habit (Dark &amp; Cocoa Cashew)</option>
-              <option value={"Sweet Surrender"}>Sweet Surrender (Nutella Centre)</option>
-              <option value={"Sugar Rush"}>Sugar Rush (Marshmallow &amp; Crisps)</option>
-              <option value={"Mixed Signals"}>Mixed Signals (White &amp; Dark Marble)</option>
-              <option value={"First Love"}>First Love (Plain Milk Chocolate)</option>
-              <option value={"Dark Affair"}>Dark Affair (70% Dark Chocolate)</option>
-              <option value={"Pocket Mischief"}>Pocket Mischief (Chocolate Almonds)</option>
-              <option value={"Caught Snacking"}>Caught Snacking (Chocolate Cashews)</option>
-              <option value={"Filled Centres"}>Filled-centre chocolate</option>
-              <option value={"Milk & Marble"}>Milk or marble chocolate</option>
-              <option value={"Crunch & Crisps"}>Crunch &amp; crisps</option>
-              <option value={"Plain Dark"}>Plain dark chocolate</option>
-              <option value={"Nutty Packs"}>Chocolate-covered nuts</option>
-              <option value={"Chocolate I tried"}>A little sample (not sure which one)</option>
+              {sampleOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
           </label>
           <fieldset className={"taste-rating"}>
