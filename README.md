@@ -25,7 +25,7 @@ Open http://localhost:3000.
 
 ## Docker
 
-This starter archive did not include `package-lock.json`, so the Docker dependency stage uses `npm install`. For repeatable production builds, run `npm install` locally once, commit the generated `package-lock.json`, and change the Docker dependency step to `npm ci`.
+The Dockerfile installs from `package.json` with `npm install`. For repeatable production builds, switch that step to `npm ci` (a `package-lock.json` is now committed).
 
 ```bash
 docker build -t oiai-catalogue .
@@ -36,13 +36,13 @@ The app listens on port 3000. Put Nginx or another reverse proxy in front for pu
 
 ## Existing product-detail route
 
-The starter project’s `/products/[slug]` route remains available with its original sample catalogue data. The OiAI homepage keeps its supplied quick-view experience; its product shelf is not currently wired to that separate legacy route.
+The starter project’s `/products/[slug]` route remains available with its original sample catalogue data. The homepage product shelf is not wired to that separate legacy route.
 
 ## Important functional note
 
-The product catalogue and its product details remain in the local project data and local image assets; MongoDB is not used for products. Only feedback form submissions are written to the MongoDB `feedback` collection through `/api/feedback`. The feedback thank-you state is shown only after MongoDB confirms the insert. The cart and checkout remain demo-only; this project does not add payment processing, order storage, or email delivery.
+Products are stored in Supabase (`products` table, served by `/api/products`) with a local fallback in `src/data/fallback-products.ts`. Feedback, orders, newsletter sign-ups and site settings are also stored in Supabase. Homepage product cards open the taste-note feedback form; the cart and UPI checkout code is retained but disconnected. See `docs/ARCHITECTURE.md`.
 
 
-## MongoDB for feedback only
+## Supabase configuration
 
-Copy `.env.example` to `.env.local`, set `MONGODB_URI` and `MONGODB_DB=oiai`, then run `npm install` and `npm run dev`. Feedback submissions store the customer name, email, selected sample/category, rating, feelings, written note, associated local product ID/name when available, page path and server timestamp in the `feedback` collection. The app does not read or write the `products` collection.
+Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_PASSWORD`, then run `npm install` and `npm run dev`. The schema is in `supabase/schema.sql`; the admin panel is at `/admin`.
