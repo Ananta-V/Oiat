@@ -115,7 +115,7 @@ export default function AdminPage() {
     email: string;
     sampleOptions: string[];
   }>({
-    whatsapp: "+91 81251 07227",
+    whatsapp: "+91 63036 48554",
     instagram: "@oiai.chocolates",
     email: "hello@oiaichocolates.com",
     sampleOptions: [
@@ -1187,12 +1187,12 @@ export default function AdminPage() {
                       style={{ paddingLeft: 42 }}
                       value={siteSettings.whatsapp}
                       onChange={(e) => setSiteSettings({ ...siteSettings, whatsapp: e.target.value })}
-                      placeholder="e.g. +91 81251 07227"
+                      placeholder="e.g. +91 63036 48554"
                       required
                     />
                   </div>
                   <small style={{ color: "#8c7662", fontSize: 11, marginTop: 4, display: "block" }}>
-                    Include country code (e.g. +91 81251 07227). Clicking opens a WhatsApp conversation.
+                    Include country code (e.g. +91 63036 48554). Clicking opens a WhatsApp conversation.
                   </small>
                 </div>
 

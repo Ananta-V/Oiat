@@ -9,7 +9,7 @@ type SiteSettings = {
 };
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  whatsapp: "+91 81251 07227",
+  whatsapp: "+91 63036 48554",
   instagram: "@oiai.chocolates",
   email: "hello@oiaichocolates.com",
 };
@@ -39,7 +39,7 @@ export default function OiAIFooter() {
   }, []);
 
   const cleanPhone = (settings.whatsapp || "").replace(/[^0-9]/g, "");
-  const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : "https://wa.me/918125107227";
+  const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : "https://wa.me/916303648554";
 
   const cleanInsta = (settings.instagram || "").replace(/^@/, "").trim();
   const instaUrl = cleanInsta ? `https://instagram.com/${cleanInsta}` : "https://instagram.com/oiai.chocolates";

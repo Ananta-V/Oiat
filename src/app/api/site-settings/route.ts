@@ -24,7 +24,7 @@ const DEFAULT_SAMPLE_OPTIONS = [
 ];
 
 const DEFAULT_SITE_SETTINGS = {
-  whatsapp: "+91 81251 07227",
+  whatsapp: "+91 63036 48554",
   instagram: "@oiai.chocolates",
   email: "hello@oiaichocolates.com",
   sampleOptions: DEFAULT_SAMPLE_OPTIONS,

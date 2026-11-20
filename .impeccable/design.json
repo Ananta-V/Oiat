@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-20T19:28:00.000Z",
+  "title": "Design System: OiAI (\"Oops! I Ate It.\")",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Roasted Cocoa Ink",
+        "canonical": "#4b1e0d",
+        "tonalRamp": ["#1e0a04", "#2d1008", "#3c160a", "#4b1e0d", "#6b2d17", "#8e4b2a", "#c48866", "#f0d5c4"]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Deep Bittersweet Ganache",
+        "canonical": "#2d1008",
+        "tonalRamp": ["#120603", "#200b05", "#2d1008", "#3f170b", "#5a2210", "#783018", "#a65234", "#dfa490"]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Melted Cocoa Brown",
+        "canonical": "#6b2d17",
+        "tonalRamp": ["#2b1008", "#3f180d", "#552112", "#6b2d17", "#8a3d21", "#ab512d", "#cb7552", "#ecc2b0"]
+      },
+      "cocoa-soft": {
+        "role": "secondary",
+        "displayName": "Warm Terracotta",
+        "canonical": "#8e4b2a",
+        "tonalRamp": ["#361b0e", "#512a16", "#6f391f", "#8e4b2a", "#ae613a", "#cb7e57", "#e0a688", "#f3d9cb"]
+      },
+      "caramel": {
+        "role": "tertiary",
+        "displayName": "Salted Caramel",
+        "canonical": "#bd7e4a",
+        "tonalRamp": ["#462c17", "#684224", "#8e5b32", "#bd7e4a", "#cd9669", "#dcaf8b", "#ebcbaf", "#f6e7d9"]
+      },
+      "honey": {
+        "role": "tertiary",
+        "displayName": "Wildflower Honey",
+        "canonical": "#ddb778",
+        "tonalRamp": ["#554020", "#7e6032", "#ac8447", "#ddb778", "#e5c792", "#edd7ad", "#f5e7cb", "#faf3e6"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Raw Parchment",
+        "canonical": "#f4e7cc",
+        "tonalRamp": ["#5e5443", "#897b64", "#b5a589", "#ded0b6", "#f4e7cc", "#f8efdc", "#fbf5e9", "#fdfbf5"]
+      },
+      "paper-light": {
+        "role": "neutral",
+        "displayName": "Whipped Parchment",
+        "canonical": "#fbf3e2",
+        "tonalRamp": ["#615c51", "#8e8677", "#bcaea0", "#e4dacb", "#fbf3e2", "#fcf6ea", "#fdf9f1", "#fefdfa"]
+      },
+      "paper-deep": {
+        "role": "neutral",
+        "displayName": "Toasted Biscuit",
+        "canonical": "#e9d6b3",
+        "tonalRamp": ["#544a39", "#7c6e56", "#a69577", "#cbb998", "#e9d6b3", "#efe1c6", "#f5ecd9", "#faf5ec"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Faint Cocoa Rule",
+        "canonical": "rgba(75, 30, 13, 0.24)",
+        "tonalRamp": ["#1e0a04", "#2d1008", "#4b1e0d", "#6b2d17", "#8e4b2a", "#bd7e4a", "#ddb778", "#f4e7cc"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display Serif",
+        "purpose": "Hero brand titles and massive editorial headlines (Cormorant Garamond)."
+      },
+      "headline": {
+        "displayName": "Headline Serif",
+        "purpose": "Modal headers and showcase category titles (Cormorant Garamond)."
+      },
+      "title": {
+        "displayName": "Title Serif",
+        "purpose": "Card titles and chocolate product names (Cormorant Garamond)."
+      },
+      "body": {
+        "displayName": "Body Sans",
+        "purpose": "Accessible UI text, descriptions, and form inputs (Manrope)."
+      },
+      "label": {
+        "displayName": "Eyebrow Label",
+        "purpose": "Uppercase tracking metadata tags and form field labels (Manrope)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "stamped-rest",
+        "value": "0 5px 0 rgba(67, 25, 11, 0.06)",
+        "purpose": "Physical cut-paper shadow at rest."
+      },
+      {
+        "name": "stamped-hover",
+        "value": "4px 6px 0 rgba(75, 30, 13, 0.12)",
+        "purpose": "Solid offset artisan ink stamp button hover."
+      },
+      {
+        "name": "floating-card",
+        "value": "0 13px 0 rgba(77, 34, 13, 0.06), 0 26px 40px rgba(77, 34, 13, 0.14)",
+        "purpose": "Lifted elevation on card hover."
+      },
+      {
+        "name": "modal-depth",
+        "value": "0 22px 90px rgba(20, 6, 2, 0.4)",
+        "purpose": "Deep elevation for modal dialogue overlays."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-brand",
+        "value": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "Primary organic transition curve."
+      },
+      {
+        "name": "liquid-rise",
+        "value": "920ms cubic-bezier(0.18, 0.78, 0.23, 1)",
+        "purpose": "Rising liquid chocolate wave animation."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "600px" },
+      { "name": "md", "value": "850px" },
+      { "name": "lg", "value": "1100px" },
+      { "name": "xl", "value": "1200px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Liquid Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary high-emphasis action button with asymmetric corners and rising liquid cocoa wave.",
+      "html": "<button class=\"ds-btn-primary\"><span class=\"ds-btn-label\">TASTE A SAMPLE</span><b class=\"ds-btn-arrow\">→</b></button>",
+      "css": ".ds-btn-primary { position: relative; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 18px; padding: 14px 22px; background: #4b1e0d; color: #fff3d8; border: 1px solid #4b1e0d; border-radius: 2px 17px 2px 17px; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: transform 0.35s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.35s; } .ds-btn-primary:hover { background: #6b2d17; transform: translateY(-3px); box-shadow: 4px 6px 0 rgba(75,30,13,0.12); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-arrow { font-size: 14px; font-weight: 600; transition: transform 0.3s; } .ds-btn-primary:hover .ds-btn-arrow { transform: translateX(3px); }"
+    },
+    {
+      "name": "Outline Paper Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action button with fine chocolate outline on cream canvas.",
+      "html": "<button class=\"ds-btn-outline\">EXPLORE THE PARLOR</button>",
+      "css": ".ds-btn-outline { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 14px 22px; background: transparent; color: #4b1e0d; border: 1px solid #865033; border-radius: 2px 17px 2px 17px; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.3s, transform 0.35s cubic-bezier(0.2,0.8,0.2,1); } .ds-btn-outline:hover { background: #e7d2ad; transform: translateY(-2px); }"
+    },
+    {
+      "name": "Product Wrapper Card",
+      "kind": "card",
+      "refersTo": "card-product",
+      "description": "Artisan confection wrapper card with asymmetric bottom corner and soft paper elevation.",
+      "html": "<div class=\"ds-card-product\"><div class=\"ds-product-visual\"></div><div class=\"ds-product-info\"><h4 class=\"ds-product-name\">Secret Crush</h4><p class=\"ds-product-desc\">Caramel ganache, roasted hazelnut crunch, 60% dark chocolate shell.</p><div class=\"ds-product-price\">₹420 <small>per box</small></div></div></div>",
+      "css": ".ds-card-product { background: rgba(255, 247, 230, 0.6); border: 1px solid rgba(75, 30, 13, 0.18); border-radius: 2px 2px 18px 2px; padding: 12px 12px 16px; box-shadow: 0 5px 0 rgba(77, 34, 13, 0.05); transition: transform 0.42s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.42s; } .ds-card-product:hover { transform: translateY(-6px); box-shadow: 0 13px 0 rgba(77,34,13,0.06), 0 24px 36px rgba(77,34,13,0.12); } .ds-product-visual { height: 160px; background: #e6c89c; border-radius: 2px 2px 12px 2px; margin-bottom: 12px; } .ds-product-name { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 700; color: #4b1e0d; margin: 0 0 6px; } .ds-product-desc { font-family: 'Manrope', sans-serif; font-size: 12px; line-height: 1.6; color: #6c4933; margin: 0 0 12px; } .ds-product-price { font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 800; color: #4b1e0d; }"
+    },
+    {
+      "name": "Memory Story Card",
+      "kind": "card",
+      "refersTo": "card-memory",
+      "description": "Clickable story card on tinted biscuit paper with subtle organic rotation.",
+      "html": "<div class=\"ds-card-memory\"><span class=\"ds-memory-index\">MOMENT #01</span><div class=\"ds-memory-art\"><i>♥</i></div><h4 class=\"ds-memory-title\">Family Table & Sunday Memories</h4><p class=\"ds-memory-snippet\">Split the last praline into three tiny pieces after Sunday dinner...</p></div>",
+      "css": ".ds-card-memory { min-height: 280px; display: flex; flex-direction: column; padding: 16px; background: #f8edd5; border: 1px solid rgba(67, 25, 11, 0.24); border-radius: 2px 16px 2px 16px; transform: rotate(-0.5deg); box-shadow: 0 5px 0 rgba(67, 25, 11, 0.06); cursor: pointer; transition: transform 0.35s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.35s; } .ds-card-memory:hover { transform: translateY(-7px) rotate(0deg); box-shadow: 0 12px 0 rgba(67,25,11,0.07), 0 20px 28px rgba(67,25,11,0.12); } .ds-memory-index { font-family: 'Manrope', sans-serif; font-size: 8px; font-weight: 800; letter-spacing: 1.3px; color: #936542; } .ds-memory-art { height: 90px; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 48px; color: #53210f; } .ds-memory-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-weight: 700; color: #4b1e0d; margin: 10px 0 6px; } .ds-memory-snippet { font-family: 'Manrope', sans-serif; font-size: 12px; line-height: 1.6; color: #6c4933; margin: 0; }"
+    },
+    {
+      "name": "Organic Text Input",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Parchment-backed input field with asymmetric rounded corners and warm cocoa border.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"What should we call you?\" />",
+      "css": ".ds-input { width: 100%; box-sizing: border-box; border: 1px solid rgba(67, 25, 11, 0.24); border-radius: 2px 10px 2px 10px; background: rgba(255, 252, 242, 0.82); color: #43190b; padding: 12px 14px; font-family: 'Manrope', sans-serif; font-size: 13px; outline: none; transition: border-color 0.25s, outline 0.25s; } .ds-input:focus { border-color: #8e4b2a; outline: 2px solid #a75a2d; outline-offset: 2px; } .ds-input::placeholder { color: #b18a6b; }"
+    },
+    {
+      "name": "Filter Tag Chip",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "Pill-style filter chip for mood tags and collection categories.",
+      "html": "<button class=\"ds-chip is-active\">♥ Comforted</button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1px solid rgba(67, 25, 11, 0.24); border-radius: 9999px; background: rgba(255, 250, 238, 0.85); color: #43190b; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.25s; } .ds-chip:hover { background: #4b1e0d; color: #fbf3e2; transform: translateY(-1px); } .ds-chip.is-active { background: #4b1e0d; color: #fbf3e2; border-color: #4b1e0d; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Artisanal Kitchen Notebook",
+    "overview": "OiAI (\"Oops! I Ate It.\") is an artisanal chocolate house from Hyderabad, India, born from small-batch experiments and the joy of spontaneous indulgence (\"Happy little accidents\", \"Tiny kitchen · Big feelings\"). The visual identity avoids cold, clinical ecommerce grids and aloof luxury minimalism. Instead, it feels like an intimate, heirloom recipe notebook kept on a flour-dusted confectioner's worktable. Every viewport balances tactile paper warmth with rich roasted cocoa ink. Elements do not sit on a sterile digital plane; they behave like organic, hand-folded confectionery wrappers, wax-stamped tasting parcels, and handwritten notes tucked into gift parcels.",
+    "keyCharacteristics": [
+      "Warm Paper Canvas: Atmospheric parchment background textures (#f4e7cc), subtle tactile grain overlays, and zero sterile pure whites.",
+      "Liquid Chocolate Motion: Organic liquid chocolate waves, slow-breathing melted cocoa hero elements, and glossy hover drips.",
+      "Asymmetric Handcrafted Geometry: Deliberate asymmetric corner radii (2px 17px 2px 17px) and slight organic rotations (-0.55deg to +0.7deg) mimicking hand-cut confectioner wrappers.",
+      "Three-Voice Typographic Harmony: Majestic literary serif headlines (Cormorant Garamond), intimate cursive margin notes (Caveat), and clean, legible functional labels (Manrope)."
+    ],
+    "rules": [
+      {
+        "name": "The No-Pure-White Rule",
+        "body": "Pure #ffffff and pure #000000 are strictly forbidden on the canvas. Surfaces must retain creamy parchment warmth (#f4e7cc / #fbf3e2), and text must remain warm roasted cocoa (#4b1e0d / #2d1008).",
+        "section": "colors"
+      },
+      {
+        "name": "The Golden Honey Reserve Rule",
+        "body": "The honey gold tone (#ddb778) is never used for general body text or large background fills. Its exclusivity denotes delight, ratings, and spontaneous celebration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three-Voice Rule",
+        "body": "Every major section must establish clear roles: Cormorant speaks for the brand, Caveat speaks for the human creator, and Manrope speaks for the user's practical actions. Never use Caveat for form labels or long reading paragraphs.",
+        "section": "typography"
+      },
+      {
+        "name": "The Stamped-at-Rest Rule",
+        "body": "Surfaces remain grounded at rest with subtle 0px-blur directional offsets. Soft ambient blur appears only when an interactive element is lifted into the air during hover or modal activation.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve the warm parchment background palette (#f4e7cc) and roasted cocoa typography (#4b1e0d).",
+      "Do use asymmetric corner radii (2px 17px 2px 17px or 2px 10px 2px 10px) on interactive elements to maintain handmade artisanal charm.",
+      "Do apply subtle alternating paper tilts (rotate(-0.4deg) to rotate(0.5deg)) to cards in multi-item lists.",
+      "Do restrict Caveat handwriting font strictly to annotations, margin notes, signatures, and personal baker doodles.",
+      "Do use liquid chocolate animations and easing curves (cubic-bezier(0.2, 0.8, 0.2, 1)) for meaningful interactive states."
+    ],
+    "donts": [
+      "Don't use pure #ffffff backgrounds or #000000 text anywhere in the storefront.",
+      "Don't use generic symmetrical 4px or 8px pill buttons that look like standard SaaS component libraries.",
+      "Don't use Caveat for form labels, navigation links, or primary body copy.",
+      "Don't use cold blue, purple, or neon accent colors that clash with warm chocolate and roasted cocoa tones.",
+      "Don't remove the paper grain overlay or fixed page frame."
+    ]
+  }
+}

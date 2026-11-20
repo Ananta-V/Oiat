@@ -2,6 +2,10 @@
 
 ## Live
 Storefront with Supabase-backed products, taste-note and memory feedback (separate thank-you overlay), editable footer contact links and sample options, animated reviews section, newsletter, admin panel (products, orders, feedback, settings & samples).
+- 7 custom chocolate photos ingested with OCR mapping to catalog products and fallback data.
+- Contact & WhatsApp ordering phone number standardized to +91 63036 48554 across all routes.
+- Hero "Order Now" CTA and slide-down sticky topbar with WhatsApp ordering CTA on scroll.
+- Responsive Quick View modal: desktop 2-column split (details + embedded taste note form), mobile stacked layout with WhatsApp order and feedback trigger buttons.
 
 ## Business state
 Showcase + price + feedback. Online payment is intentionally off (code retained).
