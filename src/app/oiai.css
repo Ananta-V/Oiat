@@ -4015,3 +4015,25 @@ body.intro-active { overflow:hidden !important; }
     padding: 8px 10px;
   }
 }
+
+.announcement-order-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  color: var(--paper) !important;
+  text-decoration: none !important;
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+.announcement-wa-svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+  color: #25d366;
+}
+
+.announcement-order-cta:hover {
+  opacity: 0.9 !important;
+  transform: translateY(-1px) !important;
+}

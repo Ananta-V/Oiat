@@ -8,7 +8,6 @@ import OiAICategories from "./OiAICategories";
 import OiAIProductShelf from "./OiAIProductShelf";
 import OiAIStory from "./OiAIStory";
 import OiAIProcess from "./OiAIProcess";
-import OiAIMoments from "./OiAIMoments";
 import OiAIReviews from "./OiAIReviews";
 import OiAIGifting from "./OiAIGifting";
 import OiAINewsletter from "./OiAINewsletter";
@@ -28,7 +27,6 @@ export default function OiAISiteLayout() {
         <OiAIProductShelf />
         <OiAIStory />
         <OiAIProcess />
-        <OiAIMoments />
         <OiAIReviews />
         <OiAIGifting />
         <OiAINewsletter />
