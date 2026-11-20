@@ -3552,10 +3552,10 @@ body.intro-active { overflow:hidden !important; }
   align-self: flex-start;
 }
 
-/* "For the people who feel like home" cards: non-interactive */
+/* "For the people who feel like home" cards: clickable to share a memory */
 .memory-card {
-  cursor: default !important;
+  cursor: pointer !important;
 }
 .memory-card:hover, .memory-card:focus-visible {
-  cursor: default !important;
+  cursor: pointer !important;
 }

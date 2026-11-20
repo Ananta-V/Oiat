@@ -821,21 +821,41 @@ export function initializeOiAI() {
       }
     }
 
-    // 5. Rating Legend
+    // 5. Rating Legend & Labels
     const ratingLegend = $('#feedback-rating-legend');
     if (ratingLegend) {
       ratingLegend.innerHTML = isMemoryMode
         ? 'HOW SPECIAL WAS THAT MOMENT? <span>Pick one</span>'
         : 'HOW WAS THAT FIRST BITE? <span>Pick one</span>';
     }
+    const r1 = $('#rating-label-1');
+    const r2 = $('#rating-label-2');
+    const r3 = $('#rating-label-3');
+    const r4 = $('#rating-label-4');
+    const r5 = $('#rating-label-5');
+    if (r1) r1.textContent = isMemoryMode ? 'A little moment' : 'Not me';
+    if (r2) r2.textContent = isMemoryMode ? 'Sweet' : 'Improve';
+    if (r3) r3.textContent = isMemoryMode ? 'Memorable' : 'Good';
+    if (r4) r4.textContent = isMemoryMode ? 'So special' : 'Loved it';
+    if (r5) r5.textContent = isMemoryMode ? 'Unforgettable!' : 'Again!';
 
-    // 6. Feelings Legend
+    // 6. Feelings Legend & Mood Chips
     const feelingsLegend = $('#feedback-feelings-legend');
     if (feelingsLegend) {
       feelingsLegend.innerHTML = isMemoryMode
         ? 'WHAT DID IT LEAVE YOU FEELING? <span>Choose any</span>'
         : 'WHAT DID IT MAKE YOU FEEL? <span>Choose any</span>';
     }
+    const f6Label = $('#feeling-label-6');
+    const f6Input = $('#feeling-input-6') as HTMLInputElement | null;
+    if (f6Label) f6Label.textContent = isMemoryMode ? '♥ Warm-hearted' : '↗ One more bite';
+    if (f6Input) f6Input.value = isMemoryMode ? 'Warm-hearted' : 'Wanting another bite';
+
+    // Update Art Panel Copy
+    const artScript = $('#feedback-art-script');
+    const artCaption = $('#feedback-art-caption');
+    if (artScript) artScript.innerHTML = isMemoryMode ? 'your story,<br />our heart' : 'your sample,<br />your say';
+    if (artCaption) artCaption.textContent = isMemoryMode ? 'SHARED MOMENTS · SWEET MEMORIES' : 'TINY KITCHEN · BIG FEELINGS';
 
     // 7. Story Title & Placeholder
     const storyTitle = $('#feedback-story-title');
@@ -880,8 +900,9 @@ export function initializeOiAI() {
     $('#feedback-thanks').hidden = true;
     $('#feedback-error').hidden = true;
   }
-  // Memory cards for "For the people who feel like home" are now display-only (no feedback modal on click)
+  // Memory cards for "For the people who feel like home" open the sweet story/memory feedback modal with the matching context
   $$('[data-feedback-open]').forEach(button => button.addEventListener('click', () => openFeedback(button.dataset.feedbackOpen || 'Your OiAI story', button.dataset.productName || '', button.dataset.productId || '')));
+  $$('[data-memory-open]').forEach(card => card.addEventListener('click', () => openFeedback(card.dataset.memoryOpen || 'Our OiAI chocolate story', '', '')));
   $('#feedback-close').addEventListener('click', closeFeedback);
   $('#feedback-backdrop').addEventListener('click', closeFeedback);
   const fbResetBtn = $('#feedback-reset-btn'); if (fbResetBtn) fbResetBtn.addEventListener('click', () => { const form = $('#feedback-form'); if (form) { form.reset(); form.hidden = false; } if ($('#feedback-thanks')) $('#feedback-thanks').hidden = true; if ($('#feedback-error')) $('#feedback-error').hidden = true; });
