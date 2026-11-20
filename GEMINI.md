@@ -22,6 +22,12 @@ Never read `oiai.css`, `oiai-interactions.ts` or `admin/page.tsx` in full unless
 Do not read: `node_modules`, `.next`, `tsconfig.tsbuildinfo`, `package-lock.json`, `oiai-product-detail (3).html`, `public/images`, `.env*`.
 Use official docs (web search) only when an actual API error appears, not by default.
 
+## Context reuse (before every task)
+- Start from these instructions; open only the doc section the task needs (ARCHITECTURE for structure, DECISIONS before changing a past choice). Do not load every doc each time.
+- Reuse recorded decisions instead of rediscovering them. If a task would reverse one, say so and ask.
+- Never re-read the whole repo to refresh context.
+- Update docs only when an architectural or implementation decision actually changes (still via the Memory rule below).
+
 ## Models
 Strongest model for architecture, admin/auth, Supabase, multi-file changes. A faster model is fine for copy, CSS tweaks, single-file fixes. Never downgrade mid-task. Quality outranks token savings.
 
